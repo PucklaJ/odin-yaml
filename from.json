@@ -1,0 +1,14 @@
+{
+  "from": {
+    "language": "c",
+    "shared": "libyaml.so",
+    "shared.windows": "yaml.lib",
+    "headers": [
+      "shared/libyaml/include/yaml.h"
+    ],
+    "ignore": {
+      "types": "FILE"
+    }
+  },
+  "to": "stdout"
+}
