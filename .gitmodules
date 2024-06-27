@@ -1,0 +1,3 @@
+[submodule "shared/libyaml"]
+	path = shared/libyaml
+	url = https://github.com/yaml/libyaml.git
