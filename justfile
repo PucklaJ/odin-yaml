@@ -13,3 +13,7 @@ to: from
 
 runic:
   just -f shared/runic/justfile
+
+example:
+    @mkdir -p build
+    odin build example -out:build/example{{ if os() == 'windows' {'.exe'} else {''} }} -vet
