@@ -1,4 +1,4 @@
-//+build windows amd64, darwin amd64, linux amd64, darwin amd64, linux amd64, windows amd64
+//+build windows, darwin, linux, darwin, linux, windows
 package yaml
 
 NULL_TAG :: `tag:yaml.org,2002:null`
@@ -527,26 +527,26 @@ foreign yaml_runic {
 
 }
 
-when (ODIN_OS == .Windows) && (ODIN_ARCH == .amd64) {
+when ODIN_OS == .Windows {
 
 foreign import yaml_runic "system:yaml.lib"
 
 }
 
-when (ODIN_OS == .Darwin) && (ODIN_ARCH == .amd64) {
+when ODIN_OS == .Darwin {
 
 size_t :: __darwin_size_t
 __darwin_size_t :: u64
 
 }
 
-when (ODIN_OS == .Linux) && (ODIN_ARCH == .amd64) || (ODIN_OS == .Darwin) && (ODIN_ARCH == .amd64) {
+when ODIN_OS == .Linux || ODIN_OS == .Darwin {
 
 foreign import yaml_runic "system:yaml"
 
 }
 
-when (ODIN_OS == .Linux) && (ODIN_ARCH == .amd64) || (ODIN_OS == .Windows) && (ODIN_ARCH == .amd64) {
+when ODIN_OS == .Linux || ODIN_OS == .Windows {
 
 size_t :: u64
 

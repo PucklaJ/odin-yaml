@@ -12,6 +12,7 @@
       "functions": "yaml_",
       "types": "yaml_",
       "constants": "YAML_"
-    }
+    },
+    "ignore_arch": true
   }
 }
