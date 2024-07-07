@@ -1,6 +1,6 @@
 default: to
 
-RUNIC := 'shared/runic/build/runic'
+RUNIC := 'runic'
 
 from:
   @mkdir -p build/runestones
@@ -10,9 +10,6 @@ from:
 
 to: from
   {{ RUNIC }} to.json
-
-runic:
-  just -f shared/runic/justfile
 
 example:
     @mkdir -p build
