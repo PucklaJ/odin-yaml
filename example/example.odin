@@ -7,7 +7,7 @@ import "core:os"
 main :: proc() {
 	fmt.println("---- Odin YAML Example ----")
 
-	parser: yaml.parser_t
+	parser: yaml.parser
 	if yaml.parser_initialize(&parser) == 0 {
 		fmt.eprintln("failed to init parser")
 		os.exit(1)
@@ -22,7 +22,7 @@ main :: proc() {
 
 	yaml.parser_set_input_string(&parser, raw_data(data), u64(len(data)))
 
-	event: yaml.event_t
+	event: yaml.event
 
 	fmt.println("---- Parsing ...")
 	for yaml.parser_parse(&parser, &event) != 0 {
