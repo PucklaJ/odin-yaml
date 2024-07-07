@@ -1,3 +1,4 @@
+//+build amd64, arm64
 package yaml
 
 NULL_TAG :: `tag:yaml.org,2002:null`
@@ -18,8 +19,8 @@ version_directive_t :: struct {
     minor: i32,
 }
 tag_directive_t :: struct {
-    handle: ^char_t,
-    prefix: ^char_t,
+    handle: cstring,
+    prefix: cstring,
 }
 encoding_t :: enum i32 {ANY_ENCODING = 0, UTF8_ENCODING = 1, UTF16LE_ENCODING = 2, UTF16BE_ENCODING = 3, }
 break_t :: enum i32 {ANY_BREAK = 0, CR_BREAK = 1, LN_BREAK = 2, CRLN_BREAK = 3, }
@@ -37,17 +38,17 @@ anon_0 :: struct {
     encoding: encoding_t,
 }
 anon_1 :: struct {
-    value: ^char_t,
+    value: cstring,
 }
 anon_2 :: struct {
-    value: ^char_t,
+    value: cstring,
 }
 anon_3 :: struct {
-    handle: ^char_t,
-    suffix: ^char_t,
+    handle: cstring,
+    suffix: cstring,
 }
 anon_4 :: struct {
-    value: ^char_t,
+    value: cstring,
     length: size_t,
     style: scalar_style_t,
 }
@@ -56,8 +57,8 @@ anon_5 :: struct {
     minor: i32,
 }
 anon_6 :: struct {
-    handle: ^char_t,
-    prefix: ^char_t,
+    handle: cstring,
+    prefix: cstring,
 }
 anon_7 :: struct #raw_union {stream_start: anon_0, alias: anon_1, anchor: anon_2, tag: anon_3, scalar: anon_4, version_directive: anon_5, tag_directive: anon_6, }
 token_t :: struct {
@@ -83,26 +84,26 @@ anon_11 :: struct {
     implicit: i32,
 }
 anon_12 :: struct {
-    anchor: ^char_t,
+    anchor: cstring,
 }
 anon_13 :: struct {
-    anchor: ^char_t,
-    tag: ^char_t,
-    value: ^char_t,
+    anchor: cstring,
+    tag: cstring,
+    value: cstring,
     length: size_t,
     plain_implicit: i32,
     quoted_implicit: i32,
     style: scalar_style_t,
 }
 anon_14 :: struct {
-    anchor: ^char_t,
-    tag: ^char_t,
+    anchor: cstring,
+    tag: cstring,
     implicit: i32,
     style: sequence_style_t,
 }
 anon_15 :: struct {
-    anchor: ^char_t,
-    tag: ^char_t,
+    anchor: cstring,
+    tag: cstring,
     implicit: i32,
     style: mapping_style_t,
 }
@@ -121,7 +122,7 @@ node_pair_t :: struct {
     value: i32,
 }
 anon_17 :: struct {
-    value: ^char_t,
+    value: cstring,
     length: size_t,
     style: scalar_style_t,
 }
@@ -146,7 +147,7 @@ anon_21 :: struct {
 anon_22 :: struct #raw_union {scalar: anon_17, sequence: anon_19, mapping: anon_21, }
 node_s :: struct {
     type: node_type_t,
-    tag: ^char_t,
+    tag: cstring,
     data: anon_22,
     start_mark: mark_t,
     end_mark: mark_t,
@@ -178,7 +179,7 @@ simple_key_t :: struct {
 }
 parser_state_t :: enum i32 {PARSE_STREAM_START_STATE = 0, PARSE_IMPLICIT_DOCUMENT_START_STATE = 1, PARSE_DOCUMENT_START_STATE = 2, PARSE_DOCUMENT_CONTENT_STATE = 3, PARSE_DOCUMENT_END_STATE = 4, PARSE_BLOCK_NODE_STATE = 5, PARSE_BLOCK_NODE_OR_INDENTLESS_SEQUENCE_STATE = 6, PARSE_FLOW_NODE_STATE = 7, PARSE_BLOCK_SEQUENCE_FIRST_ENTRY_STATE = 8, PARSE_BLOCK_SEQUENCE_ENTRY_STATE = 9, PARSE_INDENTLESS_SEQUENCE_ENTRY_STATE = 10, PARSE_BLOCK_MAPPING_FIRST_KEY_STATE = 11, PARSE_BLOCK_MAPPING_KEY_STATE = 12, PARSE_BLOCK_MAPPING_VALUE_STATE = 13, PARSE_FLOW_SEQUENCE_FIRST_ENTRY_STATE = 14, PARSE_FLOW_SEQUENCE_ENTRY_STATE = 15, PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_KEY_STATE = 16, PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_VALUE_STATE = 17, PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_END_STATE = 18, PARSE_FLOW_MAPPING_FIRST_KEY_STATE = 19, PARSE_FLOW_MAPPING_KEY_STATE = 20, PARSE_FLOW_MAPPING_VALUE_STATE = 21, PARSE_FLOW_MAPPING_EMPTY_VALUE_STATE = 22, PARSE_END_STATE = 23, }
 alias_data_t :: struct {
-    anchor: ^char_t,
+    anchor: cstring,
     index: i32,
     mark: mark_t,
 }
@@ -189,10 +190,10 @@ anon_25 :: struct {
 }
 anon_26 :: struct #raw_union {string_: anon_25, file: rawptr, }
 anon_27 :: struct {
-    start: ^char_t,
-    end: ^char_t,
-    pointer: ^char_t,
-    last: ^char_t,
+    start: cstring,
+    end: cstring,
+    pointer: cstring,
+    last: cstring,
 }
 anon_28 :: struct {
     start: ^u8,
@@ -285,10 +286,10 @@ anon_36 :: struct {
 }
 anon_37 :: struct #raw_union {string_: anon_36, file: rawptr, }
 anon_38 :: struct {
-    start: ^char_t,
-    end: ^char_t,
-    pointer: ^char_t,
-    last: ^char_t,
+    start: cstring,
+    end: cstring,
+    pointer: cstring,
+    last: cstring,
 }
 anon_39 :: struct {
     start: ^u8,
@@ -318,18 +319,18 @@ anon_43 :: struct {
     top: ^tag_directive_t,
 }
 anon_44 :: struct {
-    anchor: ^char_t,
+    anchor: cstring,
     anchor_length: size_t,
     alias: i32,
 }
 anon_45 :: struct {
-    handle: ^char_t,
+    handle: cstring,
     handle_length: size_t,
-    suffix: ^char_t,
+    suffix: cstring,
     suffix_length: size_t,
 }
 anon_46 :: struct {
-    value: ^char_t,
+    value: cstring,
     length: size_t,
     multiline: i32,
     flow_plain_allowed: i32,
@@ -403,19 +404,19 @@ foreign yaml_runic {
     document_end_event_initialize :: proc(event: ^event_t, implicit: i32) -> i32 ---
 
     @(link_name = "yaml_alias_event_initialize")
-    alias_event_initialize :: proc(event: ^event_t, anchor: ^char_t) -> i32 ---
+    alias_event_initialize :: proc(event: ^event_t, anchor: cstring) -> i32 ---
 
     @(link_name = "yaml_scalar_event_initialize")
-    scalar_event_initialize :: proc(event: ^event_t, anchor: ^char_t, tag: ^char_t, value: ^char_t, length: i32, plain_implicit: i32, quoted_implicit: i32, style: scalar_style_t) -> i32 ---
+    scalar_event_initialize :: proc(event: ^event_t, anchor: cstring, tag: cstring, value: cstring, length: i32, plain_implicit: i32, quoted_implicit: i32, style: scalar_style_t) -> i32 ---
 
     @(link_name = "yaml_sequence_start_event_initialize")
-    sequence_start_event_initialize :: proc(event: ^event_t, anchor: ^char_t, tag: ^char_t, implicit: i32, style: sequence_style_t) -> i32 ---
+    sequence_start_event_initialize :: proc(event: ^event_t, anchor: cstring, tag: cstring, implicit: i32, style: sequence_style_t) -> i32 ---
 
     @(link_name = "yaml_sequence_end_event_initialize")
     sequence_end_event_initialize :: proc(event: ^event_t) -> i32 ---
 
     @(link_name = "yaml_mapping_start_event_initialize")
-    mapping_start_event_initialize :: proc(event: ^event_t, anchor: ^char_t, tag: ^char_t, implicit: i32, style: mapping_style_t) -> i32 ---
+    mapping_start_event_initialize :: proc(event: ^event_t, anchor: cstring, tag: cstring, implicit: i32, style: mapping_style_t) -> i32 ---
 
     @(link_name = "yaml_mapping_end_event_initialize")
     mapping_end_event_initialize :: proc(event: ^event_t) -> i32 ---
@@ -436,13 +437,13 @@ foreign yaml_runic {
     document_get_root_node :: proc(document: ^document_t) -> ^node_t ---
 
     @(link_name = "yaml_document_add_scalar")
-    document_add_scalar :: proc(document: ^document_t, tag: ^char_t, value: ^char_t, length: i32, style: scalar_style_t) -> i32 ---
+    document_add_scalar :: proc(document: ^document_t, tag: cstring, value: cstring, length: i32, style: scalar_style_t) -> i32 ---
 
     @(link_name = "yaml_document_add_sequence")
-    document_add_sequence :: proc(document: ^document_t, tag: ^char_t, style: sequence_style_t) -> i32 ---
+    document_add_sequence :: proc(document: ^document_t, tag: cstring, style: sequence_style_t) -> i32 ---
 
     @(link_name = "yaml_document_add_mapping")
-    document_add_mapping :: proc(document: ^document_t, tag: ^char_t, style: mapping_style_t) -> i32 ---
+    document_add_mapping :: proc(document: ^document_t, tag: cstring, style: mapping_style_t) -> i32 ---
 
     @(link_name = "yaml_document_append_sequence_item")
     document_append_sequence_item :: proc(document: ^document_t, sequence: i32, item: i32) -> i32 ---
