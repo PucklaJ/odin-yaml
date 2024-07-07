@@ -13,6 +13,8 @@
       "types": "yaml_",
       "constants": "YAML_"
     },
-    "ignore_arch": true
+    "ignore_arch": true,
+    "use_when_else": true,
+    "no_build_tag": true
   }
 }

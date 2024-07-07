@@ -1,4 +1,3 @@
-//+build windows, darwin, linux, darwin, linux, windows
 package yaml
 
 NULL_TAG :: `tag:yaml.org,2002:null`
@@ -378,6 +377,7 @@ emitter_t :: struct {
     last_anchor_id: i32,
     document: ^document_t,
 }
+size_t :: u64
 
 @(default_calling_convention = "c")
 foreign yaml_runic {
@@ -531,24 +531,9 @@ when ODIN_OS == .Windows {
 
 foreign import yaml_runic "system:yaml.lib"
 
-}
-
-when ODIN_OS == .Darwin {
-
-size_t :: __darwin_size_t
-__darwin_size_t :: u64
-
-}
-
-when ODIN_OS == .Linux || ODIN_OS == .Darwin {
+} else {
 
 foreign import yaml_runic "system:yaml"
-
-}
-
-when ODIN_OS == .Linux || ODIN_OS == .Windows {
-
-size_t :: u64
 
 }
 

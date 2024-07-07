@@ -8,6 +8,11 @@
     ],
     "ignore": {
       "types": "FILE"
+    },
+    "overwrite": {
+      "types": {
+        "size_t": "#UInt64"
+      }
     }
   },
   "to": "stdout"
