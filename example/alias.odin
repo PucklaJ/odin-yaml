@@ -36,8 +36,12 @@ main :: proc() {
         "test-1.development.database = \"{}\"",
         development["database"],
     )
+    fmt.printfln("test-1.development.adapter = \"{}\"", development["adapter"])
+    fmt.printfln("test-1.development.host = \"{}\"", development["host"])
 
     fmt.printfln("test-1.test.database = \"{}\"", test["database"])
+    fmt.printfln("test-1.test.adapter = \"{}\"", test["adapter"])
+    fmt.printfln("test-1.test.host = \"{}\"", test["host"])
 
     for item, idx in test_2 {
         fmt.printfln("test-2[{}] = {}", idx, item)

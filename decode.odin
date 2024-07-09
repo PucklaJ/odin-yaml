@@ -199,7 +199,22 @@ decode_mapping :: proc(
 
             v, ok := decode_alias(e^, aliases)
             if !ok do return m, .Parse
-            m[current_key] = v
+
+            if current_key == "<<" {
+                delete(current_key, allocator)
+
+                if sub_m, ok_m := v.(Mapping); !ok_m {
+                    err = .Parse
+                    return
+                } else {
+                    for key, value in sub_m {
+                        m[key] = value
+                    }
+                    delete(sub_m)
+                }
+            } else {
+                m[current_key] = v
+            }
 
             is_value = false
         case .SCALAR_EVENT:
