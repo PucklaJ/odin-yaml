@@ -21,6 +21,7 @@ Error :: enum {
 Value :: union {
     i64,
     f64,
+    bool,
     string,
     Sequence,
     Mapping,
@@ -346,18 +347,66 @@ decode_scalar :: proc(
         int(e.data.scalar.length),
     )
 
-    if value_i64, ok_i64 := strconv.parse_i64(value); ok_i64 {
-        v = value_i64
-    } else if value_f64, ok_f64 := strconv.parse_f64(value); ok_f64 {
-        v = value_f64
-    } else {
+    tag := e.data.scalar.tag
+
+    switch tag {
+    case "!!int":
+        if value_i64, ok := strconv.parse_i64(value); ok {
+            v = value_i64
+        } else {
+            err = .Parse
+            return
+        }
+    case "!!float":
+        if value_f64, ok := strconv.parse_f64(value); ok {
+            v = value_f64
+        } else {
+            err = .Parse
+            return
+        }
+    case "!!bool":
+        switch value {
+        case "true", "True", "TRUE", "yes", "Yes", "YES", "on", "On", "ON":
+            v = true
+        case "false", "False", "FALSE", "no", "No", "NO", "off", "Off", "OFF":
+            v = false
+        case:
+            err = .Parse
+            return
+        }
+    case "!!str":
         mem_err: runtime.Allocator_Error = ---
         v, mem_err = strings.clone(value, allocator)
         if mem_err != .None {
             err = .Memory
             return
         }
+    case "!!null":
+    case:
+        if len(value) == 0 do break
+
+        if value_i64, ok_i64 := strconv.parse_i64(value); ok_i64 {
+            v = value_i64
+        } else if value_f64, ok_f64 := strconv.parse_f64(value); ok_f64 {
+            v = value_f64
+        } else {
+            switch value {
+            case "true", "True", "TRUE", "yes", "Yes", "YES", "on", "On", "ON":
+                v = true
+            case "false", "False", "FALSE", "no", "No", "NO", "off", "Off", "OFF":
+                v = false
+            case "~", "null":
+            case:
+                mem_err: runtime.Allocator_Error = ---
+                v, mem_err = strings.clone(value, allocator)
+                if mem_err != .None {
+                    err = .Memory
+                    return
+                }
+            }
+        }
     }
+
 
     fmt.printfln("----- Scalar {}", v)
 

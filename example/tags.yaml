@@ -1,0 +1,8 @@
+apple: !!int 32
+beans: !!float 18
+jungle: !!str 67
+net: !!null null
+message: "Hello World"
+pants: !!int "24"
+empty:
+non-empty: "Hello"
