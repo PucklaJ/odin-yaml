@@ -68,7 +68,6 @@ decode_from_bytes :: proc(
 
     parser_set_input_string(&parser, raw_data(data), u64(len(data)))
 
-    // TODO: deallocation of event
     e: event
     aliases: Mapping
     document_started: bool
@@ -77,6 +76,8 @@ decode_from_bytes :: proc(
         fmt.printfln("---- Event: {}", e.type)
 
         if !document_started {
+            defer event_delete(&e)
+
             #partial switch e.type {
             case .DOCUMENT_START_EVENT:
                 document_started = true
@@ -95,6 +96,7 @@ decode_from_bytes :: proc(
                     column = int(e.start_mark.column),
                 },
             }
+            event_delete(&e)
             return
         case .STREAM_END_EVENT:
             err = Error {
@@ -104,6 +106,7 @@ decode_from_bytes :: proc(
                     column = int(e.start_mark.column),
                 },
             }
+            event_delete(&e)
             return
         case .DOCUMENT_START_EVENT:
             err = Error {
@@ -113,8 +116,10 @@ decode_from_bytes :: proc(
                     column = int(e.start_mark.column),
                 },
             }
+            event_delete(&e)
             return
         case .DOCUMENT_END_EVENT:
+            event_delete(&e)
             break event_loop
         case .MAPPING_START_EVENT:
             if v != nil {
@@ -125,11 +130,13 @@ decode_from_bytes :: proc(
                         column = int(e.start_mark.column),
                     },
                 }
+                event_delete(&e)
                 return
             }
 
 
             anchor := anchor_to_string(e.data.mapping_start.anchor)
+            event_delete(&e)
             m := decode_mapping(&parser, &e, &aliases, allocator) or_return
             if anchor != nil do aliases[anchor.?] = m
 
@@ -142,6 +149,7 @@ decode_from_bytes :: proc(
                     column = int(e.start_mark.column),
                 },
             }
+            event_delete(&e)
             return
         case .SEQUENCE_START_EVENT:
             if v != nil {
@@ -152,10 +160,12 @@ decode_from_bytes :: proc(
                         column = int(e.start_mark.column),
                     },
                 }
+                event_delete(&e)
                 return
             }
 
             anchor := anchor_to_string(e.data.sequence_start.anchor)
+            event_delete(&e)
             seq := decode_sequence(&parser, &e, &aliases, allocator) or_return
             if anchor != nil do aliases[anchor.?] = seq
 
@@ -168,6 +178,7 @@ decode_from_bytes :: proc(
                     column = int(e.start_mark.column),
                 },
             }
+            event_delete(&e)
             return
         case .SCALAR_EVENT:
             if v != nil {
@@ -178,11 +189,13 @@ decode_from_bytes :: proc(
                         column = int(e.start_mark.column),
                     },
                 }
+                event_delete(&e)
                 return
             }
 
             anchor := anchor_to_string(e.data.scalar.anchor)
             s := decode_scalar(e, allocator) or_return
+            event_delete(&e)
             if anchor != nil do aliases[anchor.?] = s
 
             v = s
@@ -195,8 +208,10 @@ decode_from_bytes :: proc(
                     column = int(e.start_mark.column),
                 },
             }
+            event_delete(&e)
             return
         case .NO_EVENT:
+            event_delete(&e)
         }
     }
 
@@ -247,6 +262,7 @@ decode_mapping :: proc(
                     column = int(e.start_mark.column),
                 },
             }
+            event_delete(e)
             return
         case .MAPPING_START_EVENT:
             if !is_value {
@@ -257,10 +273,12 @@ decode_mapping :: proc(
                         column = int(e.start_mark.column),
                     },
                 }
+                event_delete(e)
                 return
             }
 
             anchor := anchor_to_string(e.data.mapping_start.anchor)
+            event_delete(e)
             sub_m := decode_mapping(parser, e, aliases, allocator) or_return
             if anchor != nil do aliases^[anchor.?] = sub_m
 
@@ -269,6 +287,7 @@ decode_mapping :: proc(
 
             is_value = false
         case .MAPPING_END_EVENT:
+            event_delete(e)
             return
         case .SEQUENCE_START_EVENT:
             if !is_value {
@@ -279,10 +298,12 @@ decode_mapping :: proc(
                         column = int(e.start_mark.column),
                     },
                 }
+                event_delete(e)
                 return
             }
 
             anchor := anchor_to_string(e.data.sequence_start.anchor)
+            event_delete(e)
             seq := decode_sequence(parser, e, aliases, allocator) or_return
             if anchor != nil do aliases^[anchor.?] = seq
 
@@ -298,6 +319,7 @@ decode_mapping :: proc(
                     column = int(e.start_mark.column),
                 },
             }
+            event_delete(e)
             return
         case .ALIAS_EVENT:
             if !is_value {
@@ -308,10 +330,12 @@ decode_mapping :: proc(
                         column = int(e.start_mark.column),
                     },
                 }
+                event_delete(e)
                 return
             }
 
             v, ok := decode_alias(e^, aliases)
+            event_delete(e)
             if !ok do return m, Error{type = .Parse, loc = {line = int(e.start_mark.line), column = int(e.start_mark.column)}}
 
             if current_key == "<<" {
@@ -339,6 +363,8 @@ decode_mapping :: proc(
             is_value = false
         case .SCALAR_EVENT:
             if !is_value {
+                defer event_delete(e)
+
                 current_key, mem_err = strings.clone_from_cstring_bounded(
                     e.data.scalar.value,
                     int(e.data.scalar.length),
@@ -359,6 +385,7 @@ decode_mapping :: proc(
             } else {
                 anchor := anchor_to_string(e.data.scalar.anchor)
                 current_value := decode_scalar(e^, allocator) or_return
+                event_delete(e)
                 if anchor != nil do aliases^[anchor.?] = current_value
 
                 fmt.printfln(
@@ -372,6 +399,7 @@ decode_mapping :: proc(
 
             is_value = !is_value
         case .NO_EVENT:
+            event_delete(e)
         }
     }
 
@@ -412,9 +440,11 @@ decode_sequence :: proc(
                     column = int(e.start_mark.column),
                 },
             }
+            event_delete(e)
             return
         case .MAPPING_START_EVENT:
             anchor := anchor_to_string(e.data.mapping_start.anchor)
+            event_delete(e)
             m := decode_mapping(parser, e, aliases, allocator) or_return
             if anchor != nil do aliases^[anchor.?] = m
 
@@ -428,9 +458,11 @@ decode_sequence :: proc(
                     column = int(e.start_mark.column),
                 },
             }
+            event_delete(e)
             return
         case .SEQUENCE_START_EVENT:
             anchor := anchor_to_string(e.data.sequence_start.anchor)
+            event_delete(e)
             sub_seq := decode_sequence(parser, e, aliases, allocator) or_return
             if anchor != nil do aliases^[anchor.?] = sub_seq
 
@@ -438,14 +470,17 @@ decode_sequence :: proc(
             append(&seq, sub_seq)
         case .SEQUENCE_END_EVENT:
             _seq = seq[:]
+            event_delete(e)
             return
         case .ALIAS_EVENT:
             v, ok := decode_alias(e^, aliases)
+            event_delete(e)
             if !ok do return _seq, Error{type = .Parse, loc = {line = int(e.start_mark.line), column = int(e.start_mark.column)}}
             append(&seq, v)
         case .SCALAR_EVENT:
             anchor := anchor_to_string(e.data.scalar.anchor)
             s := decode_scalar(e^, allocator) or_return
+            event_delete(e)
             if anchor != nil do aliases^[anchor.?] = s
 
             fmt.printfln("----- Sequence Element {}", s)
