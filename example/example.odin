@@ -3,34 +3,48 @@ package main
 import yaml ".."
 import "core:fmt"
 import "core:os"
+import "base:runtime"
 
 main :: proc() {
-	fmt.println("---- Odin YAML Example ----")
+    fmt.println("---- Odin YAML Example ----")
 
-	parser: yaml.parser
-	if yaml.parser_initialize(&parser) == 0 {
-		fmt.eprintln("failed to init parser")
-		os.exit(1)
-	}
-	defer yaml.parser_delete(&parser)
+    arena: runtime.Arena
+    arena_alloc := runtime.arena_allocator(&arena)
 
-	data, ok := os.read_entire_file("example/example.yaml")
-	if !ok {
-		fmt.eprintln("failed to read file")
-		os.exit(1)
-	}
+    doc, err := yaml.decode("example/example.yaml", arena_alloc)
+    if err != .None {
+        fmt.eprintfln("---- Decode Error: {}", err)
+        os.exit(1)
+    }
 
-	yaml.parser_set_input_string(&parser, raw_data(data), u64(len(data)))
+    fmt.println("---- Parsing Done\n")
 
-	event: yaml.event
+    m := doc.(yaml.Mapping)
 
-	fmt.println("---- Parsing ...")
-	for yaml.parser_parse(&parser, &event) != 0 {
-		fmt.printfln("---- Event: {}", event)
-		if event.type == .NO_EVENT {
-			break
-		}
-	}
-	fmt.println("---- Parsing Done ----")
+    fmt.printfln("age = {}", m["age"])
+    fmt.printfln("salary = {}", m["salary"])
+    fmt.printfln("message = \"{}\"", m["message"])
+
+    employees := m["employees"].(yaml.Sequence)
+
+    for employee, idx in employees {
+        e := employee.(yaml.Mapping)
+        fmt.printfln("employee[{}].age = {}", idx, e["age"])
+        fmt.printfln("employee[{}].salary = {}", idx, e["salary"])
+        fmt.printfln("employee[{}].message = \"{}\"", idx, e["message"])
+    }
+
+    inventory := m["inventory"].(yaml.Sequence)
+
+    for item, idx in inventory {
+        fmt.printfln("inventory[{}] = {}", idx, item)
+    }
+
+    father := m["father"].(yaml.Mapping)
+
+    fmt.printfln("father.age = {}", father["age"])
+    fmt.printfln("father.salary = {}", father["salary"])
+    fmt.printfln("father.message = \"{}\"", father["message"])
+
+    runtime.arena_destroy(&arena)
 }
-
