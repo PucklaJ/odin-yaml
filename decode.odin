@@ -3,6 +3,7 @@ package yaml
 import "base:runtime"
 import "core:fmt"
 import "core:os"
+import "core:slice"
 import "core:strconv"
 import "core:strings"
 
@@ -56,6 +57,9 @@ decode_from_bytes :: proc(
 
     // TODO: deallocation of event
     e: event
+    aliases: Mapping
+    defer delete(aliases)
+
     event_loop: for parser_parse(&parser, &e) != 0 {
         fmt.printfln("---- Event: {}", e.type)
 
@@ -71,7 +75,11 @@ decode_from_bytes :: proc(
                 return
             }
 
-            m := decode_mapping(&parser, &e, allocator) or_return
+
+            anchor := anchor_to_string(e.data.mapping_start.anchor)
+            m := decode_mapping(&parser, &e, &aliases, allocator) or_return
+            if anchor != nil do aliases[anchor.?] = m
+
             v = m
         case .MAPPING_END_EVENT:
             err = .Parse
@@ -82,7 +90,10 @@ decode_from_bytes :: proc(
                 return
             }
 
-            seq := decode_sequence(&parser, &e, allocator) or_return
+            anchor := anchor_to_string(e.data.sequence_start.anchor)
+            seq := decode_sequence(&parser, &e, &aliases, allocator) or_return
+            if anchor != nil do aliases[anchor.?] = seq
+
             v = seq
         case .SEQUENCE_END_EVENT:
             err = .Parse
@@ -93,16 +104,20 @@ decode_from_bytes :: proc(
                 return
             }
 
+            anchor := anchor_to_string(e.data.scalar.anchor)
             s := decode_scalar(e, allocator) or_return
+            if anchor != nil do aliases[anchor.?] = s
+
             v = s
         case .ALIAS_EVENT:
-            err = .Unknown
+            fmt.println("---- Alias on highest level")
+            err = .Parse
             return
         case .NO_EVENT:
-            err = .Unknown
-            return
         }
     }
+
+    fmt.printfln("Aliases: {}", slice.map_keys(aliases))
 
     return
 }
@@ -116,6 +131,7 @@ decode :: proc {
 decode_mapping :: proc(
     parser: ^parser,
     e: ^event,
+    aliases: ^Mapping,
     allocator: runtime.Allocator,
 ) -> (
     m: Mapping,
@@ -142,7 +158,10 @@ decode_mapping :: proc(
                 return
             }
 
-            sub_m := decode_mapping(parser, e, allocator) or_return
+            anchor := anchor_to_string(e.data.mapping_start.anchor)
+            sub_m := decode_mapping(parser, e, aliases, allocator) or_return
+            if anchor != nil do aliases^[anchor.?] = sub_m
+
             fmt.printfln("----- Mapping \"{}\": {}", current_key, len(sub_m))
             m[current_key] = sub_m
 
@@ -155,13 +174,28 @@ decode_mapping :: proc(
                 return
             }
 
-            seq := decode_sequence(parser, e, allocator) or_return
+            anchor := anchor_to_string(e.data.sequence_start.anchor)
+            seq := decode_sequence(parser, e, aliases, allocator) or_return
+            if anchor != nil do aliases^[anchor.?] = seq
+
             fmt.printfln("----- Mapping \"{}\": {}", current_key, len(seq))
             m[current_key] = seq
 
             is_value = false
         case .SEQUENCE_END_EVENT:
+            err = .Parse
+            return
         case .ALIAS_EVENT:
+            if !is_value {
+                err = .Parse
+                return
+            }
+
+            v, ok := decode_alias(e^, aliases)
+            if !ok do return m, .Parse
+            m[current_key] = v
+
+            is_value = false
         case .SCALAR_EVENT:
             if !is_value {
                 current_key, mem_err = strings.clone_from_cstring_bounded(
@@ -173,8 +207,12 @@ decode_mapping :: proc(
                     err = .Memory
                     return
                 }
+
+                fmt.printfln("----- Key {}", current_key)
             } else {
+                anchor := anchor_to_string(e.data.scalar.anchor)
                 current_value := decode_scalar(e^, allocator) or_return
+                if anchor != nil do aliases^[anchor.?] = current_value
 
                 fmt.printfln(
                     "----- Mapping \"{}\" = \"{}\"",
@@ -199,6 +237,7 @@ decode_mapping :: proc(
 decode_sequence :: proc(
     parser: ^parser,
     e: ^event,
+    aliases: ^Mapping,
     allocator: runtime.Allocator,
 ) -> (
     _seq: Sequence,
@@ -218,20 +257,34 @@ decode_sequence :: proc(
         case .DOCUMENT_START_EVENT:
         case .DOCUMENT_END_EVENT:
         case .MAPPING_START_EVENT:
-            m := decode_mapping(parser, e, allocator) or_return
+            anchor := anchor_to_string(e.data.mapping_start.anchor)
+            m := decode_mapping(parser, e, aliases, allocator) or_return
+            if anchor != nil do aliases^[anchor.?] = m
+
             fmt.printfln("----- Sequence Element {}", len(m))
             append(&seq, m)
         case .MAPPING_END_EVENT:
+            err = .Parse
+            return
         case .SEQUENCE_START_EVENT:
-            sub_seq := decode_sequence(parser, e, allocator) or_return
+            anchor := anchor_to_string(e.data.sequence_start.anchor)
+            sub_seq := decode_sequence(parser, e, aliases, allocator) or_return
+            if anchor != nil do aliases^[anchor.?] = sub_seq
+
             fmt.printfln("----- Sequence Element {}", len(sub_seq))
             append(&seq, sub_seq)
         case .SEQUENCE_END_EVENT:
             _seq = seq[:]
             return
         case .ALIAS_EVENT:
+            v, ok := decode_alias(e^, aliases)
+            if !ok do return _seq, .Parse
+            append(&seq, v)
         case .SCALAR_EVENT:
+            anchor := anchor_to_string(e.data.scalar.anchor)
             s := decode_scalar(e^, allocator) or_return
+            if anchor != nil do aliases^[anchor.?] = s
+
             fmt.printfln("----- Sequence Element {}", s)
             append(&seq, s)
         case .NO_EVENT:
@@ -272,4 +325,28 @@ decode_scalar :: proc(
     fmt.printfln("----- Scalar {}", v)
 
     return
+}
+
+@(private = "file")
+decode_alias :: proc(e: event, aliases: ^Mapping) -> (v: Value, ok: bool) {
+    alias := strings.string_from_null_terminated_ptr(
+        cast(^u8)e.data.alias.anchor,
+        1024,
+    )
+
+    fmt.printfln("----- Alias {}", alias)
+
+    v, ok = aliases^[alias]
+    return
+}
+
+@(private = "file")
+anchor_to_string :: #force_inline proc(anchor: cstring) -> Maybe(string) {
+    if anchor != nil {
+        alias := strings.clone_from_cstring(anchor)
+        fmt.printfln("----- Anchor {}", alias)
+        return alias
+    }
+
+    return nil
 }

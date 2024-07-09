@@ -1,0 +1,23 @@
+test-1:
+  defaults: &defaults_anchor
+    adapter: postgres
+    host: localhost
+
+  development:
+    database: dev_db
+    <<: *defaults_anchor
+
+  test:
+    database: test_db
+    <<: *defaults_anchor
+
+test-2:
+  - &item1 Item1
+  - &item2 Item2
+  - &item3 Item3
+
+list_of_items:
+  - *item1
+  - *item2
+  - *item3
+  - *item1

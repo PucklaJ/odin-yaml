@@ -25,9 +25,9 @@ EXAMPLE_LINKER_FLAGS := if os() == 'linux' {
 } else {
   ''
 }
-example:
+example which='example':
     @mkdir -p build
-    odin build example -out:build/example{{ if os() == 'windows' {'.exe'} else {''} }} -vet-style -vet-unused -vet-shadowing -error-pos-style:unix -debug {{ EXAMPLE_LINKER_FLAGS }}
+    odin build example/{{ which }}.odin -file -out:build/{{ which }}{{ if os() == 'windows' {'.exe'} else {''} }} -vet-style -vet-unused -vet-shadowing -error-pos-style:unix -debug {{ EXAMPLE_LINKER_FLAGS }}
 
 [linux]
 deps-debian:
