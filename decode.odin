@@ -58,16 +58,34 @@ decode_from_bytes :: proc(
     // TODO: deallocation of event
     e: event
     aliases: Mapping
+    document_started: bool
 
     event_loop: for parser_parse(&parser, &e) != 0 {
         fmt.printfln("---- Event: {}", e.type)
 
+        if !document_started {
+            #partial switch e.type {
+            case .DOCUMENT_START_EVENT:
+                document_started = true
+            case .STREAM_END_EVENT:
+                break event_loop
+            }
+            continue
+        }
+
         switch e.type {
         case .STREAM_START_EVENT:
+            // TODO: add line and column to errors
+            err = .Parse
+            return
         case .STREAM_END_EVENT:
-            break event_loop
+            err = .Parse
+            return
         case .DOCUMENT_START_EVENT:
+            err = .Parse
+            return
         case .DOCUMENT_END_EVENT:
+            break event_loop
         case .MAPPING_START_EVENT:
             if v != nil {
                 err = .Parse
@@ -272,11 +290,9 @@ decode_sequence :: proc(
         fmt.printfln("---- Event {}", e.type)
 
         switch e.type {
-        case .STREAM_START_EVENT:
-        case .STREAM_END_EVENT:
-            break event_loop
-        case .DOCUMENT_START_EVENT:
-        case .DOCUMENT_END_EVENT:
+        case .STREAM_START_EVENT, .STREAM_END_EVENT, .DOCUMENT_START_EVENT, .DOCUMENT_END_EVENT:
+            err = .Parse
+            return
         case .MAPPING_START_EVENT:
             anchor := anchor_to_string(e.data.mapping_start.anchor)
             m := decode_mapping(parser, e, aliases, allocator) or_return
