@@ -10,12 +10,22 @@ import "core:strings"
 Mapping :: map[string]Value
 Sequence :: []Value
 
-Error :: enum {
+ErrorType :: enum {
     None,
     IO,
+    Init,
     Parse,
     Memory,
-    Unknown,
+}
+
+ErrorLocation :: struct {
+    line:   int,
+    column: int,
+}
+
+Error :: struct {
+    type: ErrorType,
+    loc:  ErrorLocation,
 }
 
 Value :: union {
@@ -32,10 +42,10 @@ decode_from_file :: proc(
     allocator := context.allocator,
 ) -> (
     v: Value,
-    err: Error,
+    err: Maybe(Error),
 ) {
     data, ok := os.read_entire_file(file_name)
-    if !ok do return v, .IO
+    if !ok do return v, Error{type = .IO}
     defer delete(data)
     return decode_from_bytes(data, allocator)
 }
@@ -45,11 +55,13 @@ decode_from_bytes :: proc(
     allocator := context.allocator,
 ) -> (
     v: Value,
-    err: Error,
+    err: Maybe(Error),
 ) {
     parser: parser
     if parser_initialize(&parser) == 0 {
-        err = .Parse
+        err = Error {
+            type = .Init,
+        }
         return
     }
     defer parser_delete(&parser)
@@ -76,20 +88,43 @@ decode_from_bytes :: proc(
 
         switch e.type {
         case .STREAM_START_EVENT:
-            // TODO: add line and column to errors
-            err = .Parse
+            err = Error {
+                type = .Parse,
+                loc =  {
+                    line = int(e.start_mark.line),
+                    column = int(e.start_mark.column),
+                },
+            }
             return
         case .STREAM_END_EVENT:
-            err = .Parse
+            err = Error {
+                type = .Parse,
+                loc =  {
+                    line = int(e.start_mark.line),
+                    column = int(e.start_mark.column),
+                },
+            }
             return
         case .DOCUMENT_START_EVENT:
-            err = .Parse
+            err = Error {
+                type = .Parse,
+                loc =  {
+                    line = int(e.start_mark.line),
+                    column = int(e.start_mark.column),
+                },
+            }
             return
         case .DOCUMENT_END_EVENT:
             break event_loop
         case .MAPPING_START_EVENT:
             if v != nil {
-                err = .Parse
+                err = Error {
+                    type = .Parse,
+                    loc =  {
+                        line = int(e.start_mark.line),
+                        column = int(e.start_mark.column),
+                    },
+                }
                 return
             }
 
@@ -100,11 +135,23 @@ decode_from_bytes :: proc(
 
             v = m
         case .MAPPING_END_EVENT:
-            err = .Parse
+            err = Error {
+                type = .Parse,
+                loc =  {
+                    line = int(e.start_mark.line),
+                    column = int(e.start_mark.column),
+                },
+            }
             return
         case .SEQUENCE_START_EVENT:
             if v != nil {
-                err = .Parse
+                err = Error {
+                    type = .Parse,
+                    loc =  {
+                        line = int(e.start_mark.line),
+                        column = int(e.start_mark.column),
+                    },
+                }
                 return
             }
 
@@ -114,11 +161,23 @@ decode_from_bytes :: proc(
 
             v = seq
         case .SEQUENCE_END_EVENT:
-            err = .Parse
+            err = Error {
+                type = .Parse,
+                loc =  {
+                    line = int(e.start_mark.line),
+                    column = int(e.start_mark.column),
+                },
+            }
             return
         case .SCALAR_EVENT:
             if v != nil {
-                err = .Parse
+                err = Error {
+                    type = .Parse,
+                    loc =  {
+                        line = int(e.start_mark.line),
+                        column = int(e.start_mark.column),
+                    },
+                }
                 return
             }
 
@@ -129,14 +188,20 @@ decode_from_bytes :: proc(
             v = s
         case .ALIAS_EVENT:
             fmt.println("---- Alias on highest level")
-            err = .Parse
+            err = Error {
+                type = .Parse,
+                loc =  {
+                    line = int(e.start_mark.line),
+                    column = int(e.start_mark.column),
+                },
+            }
             return
         case .NO_EVENT:
         }
     }
 
     alias_keys, mem_err := slice.map_keys(aliases)
-    if mem_err != .None do return v, .Memory
+    if mem_err != .None do return v, Error{type = .Memory, loc = {line = int(e.start_mark.line), column = int(e.start_mark.column)}}
 
     for key in alias_keys {
         delete(key)
@@ -160,7 +225,7 @@ decode_mapping :: proc(
     allocator: runtime.Allocator,
 ) -> (
     m: Mapping,
-    err: Error,
+    err: Maybe(Error),
 ) {
     fmt.println("----- Parsing Mapping ...")
 
@@ -175,11 +240,23 @@ decode_mapping :: proc(
 
         switch e.type {
         case .STREAM_START_EVENT, .STREAM_END_EVENT, .DOCUMENT_START_EVENT, .DOCUMENT_END_EVENT:
-            err = .Parse
+            err = Error {
+                type = .Parse,
+                loc =  {
+                    line = int(e.start_mark.line),
+                    column = int(e.start_mark.column),
+                },
+            }
             return
         case .MAPPING_START_EVENT:
             if !is_value {
-                err = .Parse
+                err = Error {
+                    type = .Parse,
+                    loc =  {
+                        line = int(e.start_mark.line),
+                        column = int(e.start_mark.column),
+                    },
+                }
                 return
             }
 
@@ -195,7 +272,13 @@ decode_mapping :: proc(
             return
         case .SEQUENCE_START_EVENT:
             if !is_value {
-                err = .Parse
+                err = Error {
+                    type = .Parse,
+                    loc =  {
+                        line = int(e.start_mark.line),
+                        column = int(e.start_mark.column),
+                    },
+                }
                 return
             }
 
@@ -208,22 +291,40 @@ decode_mapping :: proc(
 
             is_value = false
         case .SEQUENCE_END_EVENT:
-            err = .Parse
+            err = Error {
+                type = .Parse,
+                loc =  {
+                    line = int(e.start_mark.line),
+                    column = int(e.start_mark.column),
+                },
+            }
             return
         case .ALIAS_EVENT:
             if !is_value {
-                err = .Parse
+                err = Error {
+                    type = .Parse,
+                    loc =  {
+                        line = int(e.start_mark.line),
+                        column = int(e.start_mark.column),
+                    },
+                }
                 return
             }
 
             v, ok := decode_alias(e^, aliases)
-            if !ok do return m, .Parse
+            if !ok do return m, Error{type = .Parse, loc = {line = int(e.start_mark.line), column = int(e.start_mark.column)}}
 
             if current_key == "<<" {
                 delete(current_key, allocator)
 
                 if sub_m, ok_m := v.(Mapping); !ok_m {
-                    err = .Parse
+                    err = Error {
+                        type = .Parse,
+                        loc =  {
+                            line = int(e.start_mark.line),
+                            column = int(e.start_mark.column),
+                        },
+                    }
                     return
                 } else {
                     for key, value in sub_m {
@@ -244,7 +345,13 @@ decode_mapping :: proc(
                     allocator,
                 )
                 if mem_err != .None {
-                    err = .Memory
+                    err = Error {
+                        type = .Memory,
+                        loc =  {
+                            line = int(e.start_mark.line),
+                            column = int(e.start_mark.column),
+                        },
+                    }
                     return
                 }
 
@@ -269,7 +376,13 @@ decode_mapping :: proc(
     }
 
     // No Mapping End encountered
-    err = .Parse
+    err = Error {
+        type = .Parse,
+        loc =  {
+            line = int(e.start_mark.line),
+            column = int(e.start_mark.column),
+        },
+    }
     return
 }
 
@@ -281,7 +394,7 @@ decode_sequence :: proc(
     allocator: runtime.Allocator,
 ) -> (
     _seq: Sequence,
-    err: Error,
+    err: Maybe(Error),
 ) {
     fmt.println("----- Parsing Sequence ...")
 
@@ -292,7 +405,13 @@ decode_sequence :: proc(
 
         switch e.type {
         case .STREAM_START_EVENT, .STREAM_END_EVENT, .DOCUMENT_START_EVENT, .DOCUMENT_END_EVENT:
-            err = .Parse
+            err = Error {
+                type = .Parse,
+                loc =  {
+                    line = int(e.start_mark.line),
+                    column = int(e.start_mark.column),
+                },
+            }
             return
         case .MAPPING_START_EVENT:
             anchor := anchor_to_string(e.data.mapping_start.anchor)
@@ -302,7 +421,13 @@ decode_sequence :: proc(
             fmt.printfln("----- Sequence Element {}", len(m))
             append(&seq, m)
         case .MAPPING_END_EVENT:
-            err = .Parse
+            err = Error {
+                type = .Parse,
+                loc =  {
+                    line = int(e.start_mark.line),
+                    column = int(e.start_mark.column),
+                },
+            }
             return
         case .SEQUENCE_START_EVENT:
             anchor := anchor_to_string(e.data.sequence_start.anchor)
@@ -316,7 +441,7 @@ decode_sequence :: proc(
             return
         case .ALIAS_EVENT:
             v, ok := decode_alias(e^, aliases)
-            if !ok do return _seq, .Parse
+            if !ok do return _seq, Error{type = .Parse, loc = {line = int(e.start_mark.line), column = int(e.start_mark.column)}}
             append(&seq, v)
         case .SCALAR_EVENT:
             anchor := anchor_to_string(e.data.scalar.anchor)
@@ -330,7 +455,13 @@ decode_sequence :: proc(
     }
 
     // No Sequence End encountered
-    err = .Parse
+    err = Error {
+        type = .Parse,
+        loc =  {
+            line = int(e.start_mark.line),
+            column = int(e.start_mark.column),
+        },
+    }
     return
 }
 
@@ -340,7 +471,7 @@ decode_scalar :: proc(
     allocator: runtime.Allocator,
 ) -> (
     v: Value,
-    err: Error,
+    err: Maybe(Error),
 ) {
     value := strings.string_from_ptr(
         cast(^u8)e.data.scalar.value,
@@ -354,14 +485,26 @@ decode_scalar :: proc(
         if value_i64, ok := strconv.parse_i64(value); ok {
             v = value_i64
         } else {
-            err = .Parse
+            err = Error {
+                type = .Parse,
+                loc =  {
+                    line = int(e.start_mark.line),
+                    column = int(e.start_mark.column),
+                },
+            }
             return
         }
     case "!!float":
         if value_f64, ok := strconv.parse_f64(value); ok {
             v = value_f64
         } else {
-            err = .Parse
+            err = Error {
+                type = .Parse,
+                loc =  {
+                    line = int(e.start_mark.line),
+                    column = int(e.start_mark.column),
+                },
+            }
             return
         }
     case "!!bool":
@@ -371,14 +514,26 @@ decode_scalar :: proc(
         case "false", "False", "FALSE", "no", "No", "NO", "off", "Off", "OFF":
             v = false
         case:
-            err = .Parse
+            err = Error {
+                type = .Parse,
+                loc =  {
+                    line = int(e.start_mark.line),
+                    column = int(e.start_mark.column),
+                },
+            }
             return
         }
     case "!!str":
         mem_err: runtime.Allocator_Error = ---
         v, mem_err = strings.clone(value, allocator)
         if mem_err != .None {
-            err = .Memory
+            err = Error {
+                type = .Memory,
+                loc =  {
+                    line = int(e.start_mark.line),
+                    column = int(e.start_mark.column),
+                },
+            }
             return
         }
     case "!!null":
@@ -400,7 +555,13 @@ decode_scalar :: proc(
                 mem_err: runtime.Allocator_Error = ---
                 v, mem_err = strings.clone(value, allocator)
                 if mem_err != .None {
-                    err = .Memory
+                    err = Error {
+                        type = .Memory,
+                        loc =  {
+                            line = int(e.start_mark.line),
+                            column = int(e.start_mark.column),
+                        },
+                    }
                     return
                 }
             }
@@ -435,4 +596,39 @@ anchor_to_string :: #force_inline proc(anchor: cstring) -> Maybe(string) {
     }
 
     return nil
+}
+
+error_string :: proc(
+    err: Maybe(Error),
+    file_name: string = "yaml",
+    allocator := context.allocator,
+) -> string {
+    b: strings.Builder
+    strings.builder_init(&b, allocator)
+
+    if e, ok := err.?; ok {
+        strings.write_string(&b, file_name)
+        strings.write_rune(&b, ':')
+        strings.write_int(&b, e.loc.line)
+        strings.write_rune(&b, ':')
+        strings.write_int(&b, e.loc.column)
+        strings.write_string(&b, ": ")
+
+        switch e.type {
+        case .Init:
+            strings.write_string(&b, "error while initializing libyaml")
+        case .IO:
+            strings.write_string(&b, "io error")
+        case .Memory:
+            strings.write_string(&b, "memory allocation error")
+        case .None:
+            strings.write_string(&b, "success")
+        case .Parse:
+            strings.write_string(&b, "parse error")
+        }
+    } else {
+        strings.write_string(&b, "None")
+    }
+
+    return strings.to_string(b)
 }

@@ -12,8 +12,8 @@ main :: proc() {
     arena_alloc := runtime.arena_allocator(&arena)
 
     doc, err := yaml.decode("example/alias.yaml", arena_alloc)
-    if err != .None {
-        fmt.eprintfln("---- Decode Error: {}", err)
+    if err != nil {
+        fmt.eprintfln("---- {}", yaml.error_string(err, "example/alias.yaml"))
         os.exit(1)
     }
 

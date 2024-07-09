@@ -1,9 +1,9 @@
 package main
 
 import yaml ".."
+import "base:runtime"
 import "core:fmt"
 import "core:os"
-import "base:runtime"
 
 main :: proc() {
     fmt.println("---- Odin YAML Example ----")
@@ -12,8 +12,11 @@ main :: proc() {
     arena_alloc := runtime.arena_allocator(&arena)
 
     doc, err := yaml.decode("example/example.yaml", arena_alloc)
-    if err != .None {
-        fmt.eprintfln("---- Decode Error: {}", err)
+    if err != nil {
+        fmt.eprintfln(
+            "---- {}",
+            yaml.error_string(err, "example/example.yaml"),
+        )
         os.exit(1)
     }
 
