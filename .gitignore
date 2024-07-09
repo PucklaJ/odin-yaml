@@ -1,4 +1,5 @@
 build/
+lib/linux/
 *.o
 *.obj
 ols.json
