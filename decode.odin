@@ -58,7 +58,6 @@ decode_from_bytes :: proc(
     // TODO: deallocation of event
     e: event
     aliases: Mapping
-    defer delete(aliases)
 
     event_loop: for parser_parse(&parser, &e) != 0 {
         fmt.printfln("---- Event: {}", e.type)
@@ -117,7 +116,14 @@ decode_from_bytes :: proc(
         }
     }
 
-    fmt.printfln("Aliases: {}", slice.map_keys(aliases))
+    alias_keys, mem_err := slice.map_keys(aliases)
+    if mem_err != .None do return v, .Memory
+
+    for key in alias_keys {
+        delete(key)
+    }
+    delete(alias_keys)
+    delete(aliases)
 
     return
 }
