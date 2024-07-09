@@ -614,9 +614,9 @@ error_string :: proc(
     if e, ok := err.?; ok {
         strings.write_string(&b, file_name)
         strings.write_rune(&b, ':')
-        strings.write_int(&b, e.loc.line)
+        strings.write_int(&b, e.loc.line + 1)
         strings.write_rune(&b, ':')
-        strings.write_int(&b, e.loc.column)
+        strings.write_int(&b, e.loc.column + 1)
         strings.write_string(&b, ": ")
 
         switch e.type {
