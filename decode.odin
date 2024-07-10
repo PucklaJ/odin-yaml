@@ -88,7 +88,7 @@ decode_from_bytes :: proc(
         case .STREAM_START_EVENT:
             err = Error {
                 type = .Parse,
-                loc =  {
+                loc = {
                     line = int(e.start_mark.line),
                     column = int(e.start_mark.column),
                 },
@@ -98,7 +98,7 @@ decode_from_bytes :: proc(
         case .STREAM_END_EVENT:
             err = Error {
                 type = .Parse,
-                loc =  {
+                loc = {
                     line = int(e.start_mark.line),
                     column = int(e.start_mark.column),
                 },
@@ -108,7 +108,7 @@ decode_from_bytes :: proc(
         case .DOCUMENT_START_EVENT:
             err = Error {
                 type = .Parse,
-                loc =  {
+                loc = {
                     line = int(e.start_mark.line),
                     column = int(e.start_mark.column),
                 },
@@ -122,7 +122,7 @@ decode_from_bytes :: proc(
             if v != nil {
                 err = Error {
                     type = .Parse,
-                    loc =  {
+                    loc = {
                         line = int(e.start_mark.line),
                         column = int(e.start_mark.column),
                     },
@@ -141,7 +141,7 @@ decode_from_bytes :: proc(
         case .MAPPING_END_EVENT:
             err = Error {
                 type = .Parse,
-                loc =  {
+                loc = {
                     line = int(e.start_mark.line),
                     column = int(e.start_mark.column),
                 },
@@ -152,7 +152,7 @@ decode_from_bytes :: proc(
             if v != nil {
                 err = Error {
                     type = .Parse,
-                    loc =  {
+                    loc = {
                         line = int(e.start_mark.line),
                         column = int(e.start_mark.column),
                     },
@@ -170,7 +170,7 @@ decode_from_bytes :: proc(
         case .SEQUENCE_END_EVENT:
             err = Error {
                 type = .Parse,
-                loc =  {
+                loc = {
                     line = int(e.start_mark.line),
                     column = int(e.start_mark.column),
                 },
@@ -181,7 +181,7 @@ decode_from_bytes :: proc(
             if v != nil {
                 err = Error {
                     type = .Parse,
-                    loc =  {
+                    loc = {
                         line = int(e.start_mark.line),
                         column = int(e.start_mark.column),
                     },
@@ -199,7 +199,7 @@ decode_from_bytes :: proc(
         case .ALIAS_EVENT:
             err = Error {
                 type = .Parse,
-                loc =  {
+                loc = {
                     line = int(e.start_mark.line),
                     column = int(e.start_mark.column),
                 },
@@ -246,10 +246,13 @@ decode_mapping :: proc(
 
     event_loop: for parser_parse(parser, e) != 0 {
         switch e.type {
-        case .STREAM_START_EVENT, .STREAM_END_EVENT, .DOCUMENT_START_EVENT, .DOCUMENT_END_EVENT:
+        case .STREAM_START_EVENT,
+             .STREAM_END_EVENT,
+             .DOCUMENT_START_EVENT,
+             .DOCUMENT_END_EVENT:
             err = Error {
                 type = .Parse,
-                loc =  {
+                loc = {
                     line = int(e.start_mark.line),
                     column = int(e.start_mark.column),
                 },
@@ -260,7 +263,7 @@ decode_mapping :: proc(
             if !is_value {
                 err = Error {
                     type = .Parse,
-                    loc =  {
+                    loc = {
                         line = int(e.start_mark.line),
                         column = int(e.start_mark.column),
                     },
@@ -274,6 +277,7 @@ decode_mapping :: proc(
             sub_m := decode_mapping(parser, e, aliases, allocator) or_return
             if anchor != nil do aliases^[anchor.?] = sub_m
 
+            // TODO: support merge keys with literal mappings
             m[current_key] = sub_m
 
             is_value = false
@@ -284,7 +288,7 @@ decode_mapping :: proc(
             if !is_value {
                 err = Error {
                     type = .Parse,
-                    loc =  {
+                    loc = {
                         line = int(e.start_mark.line),
                         column = int(e.start_mark.column),
                     },
@@ -304,7 +308,7 @@ decode_mapping :: proc(
         case .SEQUENCE_END_EVENT:
             err = Error {
                 type = .Parse,
-                loc =  {
+                loc = {
                     line = int(e.start_mark.line),
                     column = int(e.start_mark.column),
                 },
@@ -315,7 +319,7 @@ decode_mapping :: proc(
             if !is_value {
                 err = Error {
                     type = .Parse,
-                    loc =  {
+                    loc = {
                         line = int(e.start_mark.line),
                         column = int(e.start_mark.column),
                     },
@@ -334,7 +338,7 @@ decode_mapping :: proc(
                 if sub_m, ok_m := v.(Mapping); !ok_m {
                     err = Error {
                         type = .Parse,
-                        loc =  {
+                        loc = {
                             line = int(e.start_mark.line),
                             column = int(e.start_mark.column),
                         },
@@ -363,7 +367,7 @@ decode_mapping :: proc(
                 if mem_err != .None {
                     err = Error {
                         type = .Memory,
-                        loc =  {
+                        loc = {
                             line = int(e.start_mark.line),
                             column = int(e.start_mark.column),
                         },
@@ -388,7 +392,7 @@ decode_mapping :: proc(
     // No Mapping End encountered
     err = Error {
         type = .Parse,
-        loc =  {
+        loc = {
             line = int(e.start_mark.line),
             column = int(e.start_mark.column),
         },
@@ -410,10 +414,13 @@ decode_sequence :: proc(
 
     event_loop: for parser_parse(parser, e) != 0 {
         switch e.type {
-        case .STREAM_START_EVENT, .STREAM_END_EVENT, .DOCUMENT_START_EVENT, .DOCUMENT_END_EVENT:
+        case .STREAM_START_EVENT,
+             .STREAM_END_EVENT,
+             .DOCUMENT_START_EVENT,
+             .DOCUMENT_END_EVENT:
             err = Error {
                 type = .Parse,
-                loc =  {
+                loc = {
                     line = int(e.start_mark.line),
                     column = int(e.start_mark.column),
                 },
@@ -430,7 +437,7 @@ decode_sequence :: proc(
         case .MAPPING_END_EVENT:
             err = Error {
                 type = .Parse,
-                loc =  {
+                loc = {
                     line = int(e.start_mark.line),
                     column = int(e.start_mark.column),
                 },
@@ -467,7 +474,7 @@ decode_sequence :: proc(
     // No Sequence End encountered
     err = Error {
         type = .Parse,
-        loc =  {
+        loc = {
             line = int(e.start_mark.line),
             column = int(e.start_mark.column),
         },
@@ -497,7 +504,7 @@ decode_scalar :: proc(
         } else {
             err = Error {
                 type = .Parse,
-                loc =  {
+                loc = {
                     line = int(e.start_mark.line),
                     column = int(e.start_mark.column),
                 },
@@ -510,7 +517,7 @@ decode_scalar :: proc(
         } else {
             err = Error {
                 type = .Parse,
-                loc =  {
+                loc = {
                     line = int(e.start_mark.line),
                     column = int(e.start_mark.column),
                 },
@@ -526,7 +533,7 @@ decode_scalar :: proc(
         case:
             err = Error {
                 type = .Parse,
-                loc =  {
+                loc = {
                     line = int(e.start_mark.line),
                     column = int(e.start_mark.column),
                 },
@@ -539,7 +546,7 @@ decode_scalar :: proc(
         if mem_err != .None {
             err = Error {
                 type = .Memory,
-                loc =  {
+                loc = {
                     line = int(e.start_mark.line),
                     column = int(e.start_mark.column),
                 },
@@ -558,7 +565,15 @@ decode_scalar :: proc(
             switch value {
             case "true", "True", "TRUE", "yes", "Yes", "YES", "on", "On", "ON":
                 v = true
-            case "false", "False", "FALSE", "no", "No", "NO", "off", "Off", "OFF":
+            case "false",
+                 "False",
+                 "FALSE",
+                 "no",
+                 "No",
+                 "NO",
+                 "off",
+                 "Off",
+                 "OFF":
                 v = false
             case "~", "null":
             case:
@@ -567,7 +582,7 @@ decode_scalar :: proc(
                 if mem_err != .None {
                     err = Error {
                         type = .Memory,
-                        loc =  {
+                        loc = {
                             line = int(e.start_mark.line),
                             column = int(e.start_mark.column),
                         },
