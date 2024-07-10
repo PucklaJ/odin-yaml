@@ -26,8 +26,13 @@ EXAMPLE_LINKER_FLAGS := if os() == 'linux' {
 } else {
   ''
 }
-example which='example': (make-directory 'build')
-    odin build example/{{ which }}.odin -file -out:build/{{ which }}{{ if os() == 'windows' {'.exe'} else {''} }} -vet-style -vet-unused -vet-shadowing -error-pos-style:unix -debug {{ EXAMPLE_LINKER_FLAGS }}
+YAML_STATIC := if os() == 'windows' {
+  'true'
+} else {
+  'false'
+}
+example which='example' STATIC=YAML_STATIC: (make-directory 'build')
+    odin build example/{{ which }}.odin -file -out:build/{{ which }}{{ if os() == 'windows' {'.exe'} else {''} }} -vet-style -vet-unused -vet-shadowing -error-pos-style:unix -debug {{ EXAMPLE_LINKER_FLAGS }} -define:YAML_STATIC={{ STATIC }}
 
 [linux]
 deps-debian:
