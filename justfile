@@ -1,3 +1,5 @@
+set windows-shell := ['powershell.exe']
+
 default: to
 
 RUNIC := 'runic'
@@ -42,3 +44,14 @@ build:
 
   ln -rsf shared/libyaml/src/.libs/libyaml.so lib/{{ os() }}/libyaml.so
   ln -rsf shared/libyaml/src/.libs/libyaml.a lib/{{ os() }}/libyaml.a
+
+ARCH := if arch() == 'aarch64' { 'arm64' } else { arch() }
+[windows]
+build:
+  @New-Item -Path lib\windows\{{ ARCH }} -ItemType Directory -Force
+  @New-Item -Path build\cmake -ItemType Directory -Force
+
+  cmake -G "NMake Makefiles" -S shared\libyaml -B build\cmake -DBUILD_TESTING=NO
+  cmake --build build\cmake
+
+  Copy-Item -Path build\cmake\yaml.lib -Destination lib\windows\{{ ARCH }}\yaml.lib
