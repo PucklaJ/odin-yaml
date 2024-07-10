@@ -533,7 +533,7 @@ when (ODIN_OS == .Windows) && (ODIN_ARCH == .amd64) {
 when #config(YAML_STATIC, false) {
     foreign import yaml_runic "lib/windows/x86_64/yaml.lib"
 } else {
-    foreign import yaml_runic "system:yaml.lib"
+    foreign import yaml_runic "lib/windows/x86_64/yamld.lib"
 }
 
 } else when (ODIN_OS == .Windows) && (ODIN_ARCH == .arm64) {
@@ -541,7 +541,7 @@ when #config(YAML_STATIC, false) {
 when #config(YAML_STATIC, false) {
     foreign import yaml_runic "lib/windows/arm64/yaml.lib"
 } else {
-    foreign import yaml_runic "system:yaml.lib"
+    foreign import yaml_runic "lib/windows/arm64/yamld.lib"
 }
 
 } else when (ODIN_OS == .Linux) && (ODIN_ARCH == .amd64) || (ODIN_OS == .Linux) && (ODIN_ARCH == .arm64) {
