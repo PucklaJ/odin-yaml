@@ -2,8 +2,11 @@
   "version": 0,
   "from": [
     "build/runestones/libyaml.linux.x86_64",
+    "build/runestones/libyaml.linux.arm64",
     "build/runestones/libyaml.windows.x86_64",
-    "build/runestones/libyaml.macos.x86_64"
+    "build/runestones/libyaml.windows.arm64",
+    "build/runestones/libyaml.macos.x86_64",
+    "build/runestones/libyaml.macos.arm64"
   ],
   "to": {
     "language": "odin",
@@ -17,7 +20,7 @@
     "trim_suffix": {
       "types": "_t"
     },
-    "ignore_arch": true,
+    "ignore_arch": false,
     "use_when_else": true,
     "no_build_tag": true
   }

@@ -11,8 +11,11 @@ MAKE := if os() == 'linux' {
 
 from: (make-directory 'build/runestones')
   {{ RUNIC }} --os linux --arch x86_64 from.json > build/runestones/libyaml.linux.x86_64
+  {{ RUNIC }} --os linux --arch arm64 from.json > build/runestones/libyaml.linux.arm64
   {{ RUNIC }} --os windows --arch x86_64 from.json > build/runestones/libyaml.windows.x86_64
+  {{ RUNIC }} --os windows --arch arm64 from.json > build/runestones/libyaml.windows.arm64
   {{ RUNIC }} --os macos --arch x86_64 from.json > build/runestones/libyaml.macos.x86_64
+  {{ RUNIC }} --os macos --arch arm64 from.json > build/runestones/libyaml.macos.arm64
 
 to: from
   {{ RUNIC }} to.json
