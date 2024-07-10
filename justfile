@@ -9,8 +9,7 @@ MAKE := if os() == 'linux' {
   'gmake'
 }
 
-from:
-  @mkdir -p build/runestones
+from: (make-directory 'build/runestones')
   {{ RUNIC }} --os linux --arch x86_64 from.json > build/runestones/libyaml.linux.x86_64
   {{ RUNIC }} --os windows --arch x86_64 from.json > build/runestones/libyaml.windows.x86_64
   {{ RUNIC }} --os macos --arch x86_64 from.json > build/runestones/libyaml.macos.x86_64
@@ -27,8 +26,7 @@ EXAMPLE_LINKER_FLAGS := if os() == 'linux' {
 } else {
   ''
 }
-example which='example':
-    @mkdir -p build
+example which='example': (make-directory 'build')
     odin build example/{{ which }}.odin -file -out:build/{{ which }}{{ if os() == 'windows' {'.exe'} else {''} }} -vet-style -vet-unused -vet-shadowing -error-pos-style:unix -debug {{ EXAMPLE_LINKER_FLAGS }}
 
 [linux]
@@ -36,8 +34,7 @@ deps-debian:
   sudo apt install autoconf gcc make libtool
 
 [unix]
-build:
-  @mkdir -p lib/{{ os() }}
+build: (make-directory 'lib/' + os())
   cd shared/libyaml && ./bootstrap
   cd shared/libyaml && ./configure
   {{ MAKE }} -C shared/libyaml -j{{ num_cpus() }}
@@ -47,11 +44,16 @@ build:
 
 ARCH := if arch() == 'aarch64' { 'arm64' } else { arch() }
 [windows]
-build:
-  @New-Item -Path lib\windows\{{ ARCH }} -ItemType Directory -Force
-  @New-Item -Path build\cmake -ItemType Directory -Force
-
+build: (make-directory 'lib\windows\' + ARCH) (make-directory 'build\cmake')
   cmake -G "NMake Makefiles" -S shared\libyaml -B build\cmake -DBUILD_TESTING=NO
   cmake --build build\cmake
 
   Copy-Item -Path build\cmake\yaml.lib -Destination lib\windows\{{ ARCH }}\yaml.lib
+
+[unix]
+make-directory DIR:
+  @mkdir -p "{{ DIR }}"
+
+[windows]
+make-directory DIR:
+  @New-Item -Path "{{ DIR }}" -ItemType Directory -Force
