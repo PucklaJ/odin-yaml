@@ -1,8 +1,10 @@
 {
+  "version": 0,
   "from": {
     "language": "c",
     "shared": "libyaml.so",
-    "shared.windows": "yaml.lib",
+    "static.linux": "lib/linux/libyaml.a",
+    "static.windows": "yaml.lib",
     "headers": [
       "shared/libyaml/include/yaml.h"
     ],

@@ -528,9 +528,21 @@ foreign yaml_runic {
 
 }
 
-when ODIN_OS == .Windows {
+when ODIN_OS == .Linux {
 
-foreign import yaml_runic "system:yaml.lib"
+when #config(YAML_STATIC, false) {
+    foreign import yaml_runic "lib/linux/libyaml.a"
+} else {
+    foreign import yaml_runic "system:yaml"
+}
+
+} else when ODIN_OS == .Windows {
+
+when #config(YAML_STATIC, false) {
+    foreign import yaml_runic "system:yaml.lib"
+} else {
+    foreign import yaml_runic "system:yaml"
+}
 
 } else {
 

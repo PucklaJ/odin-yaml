@@ -1,4 +1,5 @@
 {
+  "version": 0,
   "from": [
     "build/runestones/libyaml.linux.x86_64",
     "build/runestones/libyaml.windows.x86_64",
