@@ -53,10 +53,14 @@ build: (make-directory 'lib/' + os())
 ARCH := if arch() == 'aarch64' { 'arm64' } else { arch() }
 [windows]
 build: (make-directory 'lib\windows\' + ARCH) (make-directory 'build\cmake')
-  cmake -G "NMake Makefiles" -S shared\libyaml -B build\cmake -DBUILD_TESTING=NO
+  cmake -G "NMake Makefiles" -S shared\libyaml -B build\cmake -DBUILD_TESTING=NO -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded"
   cmake --build build\cmake
-
   Copy-Item -Path build\cmake\yaml.lib -Destination lib\windows\{{ ARCH }}\yaml.lib
+
+  cmake -G "NMake Makefiles" -S shared\libyaml -B build\cmake -DBUILD_TESTING=NO -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -DBUILD_SHARED_LIBS=YES
+  cmake --build build\cmake
+  Copy-Item -Path build\cmake\yaml.lib -Destination lib\windows\{{ ARCH }}\yamld.lib
+  Copy-Item -Path build\cmake\yaml.dll -Destination lib\windows\{{ ARCH }}\yaml.dll
 
 [unix]
 make-directory DIR:
