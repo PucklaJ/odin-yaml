@@ -3,6 +3,7 @@
   "from": {
     "language": "c",
     "shared": "libyaml.so",
+    "static": "libyaml.a",
     "shared.windows.x86_64": "lib/windows/x86_64/yamld.lib",
     "shared.windows.arm64": "lib/windows/arm64/yamld.lib",
     "static.linux": "lib/linux/libyaml.a",

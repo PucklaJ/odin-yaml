@@ -554,7 +554,15 @@ when #config(YAML_STATIC, false) {
 
 } else {
 
-foreign import yaml_runic "system:yaml"
+when #config(YAML_STATIC, false) {
+    when ODIN_OS == .Darwin {
+    foreign import yaml_runic "system:yaml"
+} else {
+    foreign import yaml_runic "system:libyaml.a"
+}
+} else {
+    foreign import yaml_runic "system:yaml"
+}
 
 }
 
