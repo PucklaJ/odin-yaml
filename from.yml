@@ -1,0 +1,22 @@
+version: 0
+from:
+  language: c
+  shared: libyaml.so
+  shared.windows.x86_64: "lib/windows/x86_64/yamld.lib"
+  shared.windows.arm64: "lib/windows/arm64/yamld.lib"
+  static: libyaml.a
+  static.linux: "lib/linux/libyaml.a"
+  static.windows.x86_64: "lib/windows/x86_64/yaml.lib"
+  static.windows.arm64: "lib/windows/arm64/yaml.lib"
+  headers: "shared/libyaml/include/yaml.h"
+  ignore:
+    types: FILE
+  overwrite:
+    types:
+      'size_t': "#UInt64"
+      'yaml_read_handler_t': "#FuncPtr #SInt32 data #RawPtr buffer #UInt8 #Attr Ptr 1 #AttrEnd size_ size_t size_read size_t #Attr Ptr 1 #AttrEnd"
+      'yaml_write_handler_t': "#FuncPtr #SInt32 data #RawPtr buffer #UInt8 #Attr Ptr 1 #AttrEnd size_ size_t"
+      'anon_36': "#Struct buffer #UInt8 #Attr Ptr 1 #AttrEnd size_ size_t size_written size_t #Attr Ptr 1 #AttrEnd"
+    functions:
+      'yaml_emitter_set_output_string': "#Void emitter yaml_emitter_t #Attr Ptr 1 #AttrEnd output #UInt8 #Attr Ptr 1 #AttrEnd size_ size_t size_written size_t #Attr Ptr 1 #AttrEnd"
+to: stdout
