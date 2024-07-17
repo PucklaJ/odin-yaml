@@ -528,7 +528,15 @@ foreign yaml_runic {
 
 }
 
-when (ODIN_OS == .Windows) && (ODIN_ARCH == .amd64) {
+when (ODIN_OS == .Linux) {
+
+when #config(YAML_STATIC, false) {
+    foreign import yaml_runic "lib/linux/libyaml.a"
+} else {
+    foreign import yaml_runic "system:yaml"
+}
+
+} else when (ODIN_OS == .Windows) && (ODIN_ARCH == .amd64) {
 
 when #config(YAML_STATIC, false) {
     foreign import yaml_runic "lib/windows/x86_64/yaml.lib"
@@ -544,10 +552,10 @@ when #config(YAML_STATIC, false) {
     foreign import yaml_runic "lib/windows/arm64/yamld.lib"
 }
 
-} else when (ODIN_OS == .Linux) && (ODIN_ARCH == .amd64) || (ODIN_OS == .Linux) && (ODIN_ARCH == .arm64) {
+} else when (ODIN_OS == .Darwin) && (ODIN_ARCH == .amd64) {
 
 when #config(YAML_STATIC, false) {
-    foreign import yaml_runic "lib/linux/libyaml.a"
+    foreign import yaml_runic "lib/macos/x86_64/libyaml.a"
 } else {
     foreign import yaml_runic "system:yaml"
 }

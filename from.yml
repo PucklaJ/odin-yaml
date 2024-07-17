@@ -4,10 +4,12 @@ from:
   shared: libyaml.so
   shared.windows.x86_64: "lib/windows/x86_64/yamld.lib"
   shared.windows.arm64: "lib/windows/arm64/yamld.lib"
+  shared.macos: libyaml.dylib
   static: libyaml.a
   static.linux: "lib/linux/libyaml.a"
   static.windows.x86_64: "lib/windows/x86_64/yaml.lib"
   static.windows.arm64: "lib/windows/arm64/yaml.lib"
+  static.macos.x86_64: "lib/macos/x86_64/libyaml.a"
   headers: "shared/libyaml/include/yaml.h"
   ignore:
     types: FILE
