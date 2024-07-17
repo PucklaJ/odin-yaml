@@ -47,13 +47,18 @@ deps-debian:
 deps:
   brew install autoconf libtool automake
 
+SHARED_LIB := if os() == 'macos' {
+  'dylib'
+} else {
+  'so'
+}
 [unix]
 build: (make-directory 'lib/' + os())
   cd {{ justfile_directory() }}/shared/libyaml && ./bootstrap
   cd {{ justfile_directory() }}/shared/libyaml && ./configure
   {{ MAKE }} -C {{ justfile_directory() }}/shared/libyaml -j{{ num_cpus() }}
 
-  ln -sf {{ justfile_directory() }}/shared/libyaml/src/.libs/libyaml.so {{ justfile_directory() }}/lib/{{ os() }}/libyaml.so
+  ln -sf {{ justfile_directory() }}/shared/libyaml/src/.libs/libyaml.{{ SHARED_LIB }} {{ justfile_directory() }}/lib/{{ os() }}/libyaml.{{ SHARED_LIB }}
   ln -sf {{ justfile_directory() }}/shared/libyaml/src/.libs/libyaml.a {{ justfile_directory() }}/lib/{{ os() }}/libyaml.a
 
 ARCH := if arch() == 'aarch64' { 'arm64' } else { arch() }
