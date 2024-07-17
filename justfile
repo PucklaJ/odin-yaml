@@ -5,6 +5,8 @@ default: to
 RUNIC := 'runic'
 MAKE := if os() == 'linux' {
   'make'
+} else if os() == 'macos' {
+  'make'
 } else {
   'gmake'
 }
