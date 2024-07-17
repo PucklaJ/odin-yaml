@@ -43,6 +43,10 @@ example which='example' STATIC=YAML_STATIC: (make-directory 'build')
 deps-debian:
   sudo apt install autoconf gcc make libtool
 
+[macos]
+deps:
+  brew install autoconf libtool automake
+
 [unix]
 build: (make-directory 'lib/' + os())
   cd {{ justfile_directory() }}/shared/libyaml && ./bootstrap
