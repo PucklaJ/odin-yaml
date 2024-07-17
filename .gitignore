@@ -1,6 +1,7 @@
 .vscode/
 build/
 lib/linux/
+lib/macos/
 *.o
 *.obj
 ols.json

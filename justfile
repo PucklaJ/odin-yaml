@@ -53,8 +53,8 @@ build: (make-directory 'lib/' + os())
   cd {{ justfile_directory() }}/shared/libyaml && ./configure
   {{ MAKE }} -C {{ justfile_directory() }}/shared/libyaml -j{{ num_cpus() }}
 
-  ln -rsf {{ justfile_directory() }}/shared/libyaml/src/.libs/libyaml.so {{ justfile_directory() }}/lib/{{ os() }}/libyaml.so
-  ln -rsf {{ justfile_directory() }}/shared/libyaml/src/.libs/libyaml.a {{ justfile_directory() }}/lib/{{ os() }}/libyaml.a
+  ln -sf {{ justfile_directory() }}/shared/libyaml/src/.libs/libyaml.so {{ justfile_directory() }}/lib/{{ os() }}/libyaml.so
+  ln -sf {{ justfile_directory() }}/shared/libyaml/src/.libs/libyaml.a {{ justfile_directory() }}/lib/{{ os() }}/libyaml.a
 
 ARCH := if arch() == 'aarch64' { 'arm64' } else { arch() }
 [windows]
