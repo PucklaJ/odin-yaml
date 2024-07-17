@@ -33,6 +33,8 @@ EXAMPLE_LINKER_FLAGS := if os() == 'linux' {
 }
 YAML_STATIC := if os() == 'windows' {
   'true'
+} else if os() == 'macos' {
+  'true'
 } else {
   'false'
 }
