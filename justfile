@@ -41,9 +41,9 @@ deps-debian:
 deps:
   brew install autoconf libtool automake
 
-[freebsd]
-deps:
-  pkg install -y autoconf libtool automake
+# [freebsd]
+# deps:
+#   pkg install -y autoconf libtool automake
 
 SHARED_LIB := if os() == 'macos' {
   'dylib'
