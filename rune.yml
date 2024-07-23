@@ -1,4 +1,11 @@
 version: 0
+platforms:
+  - Linux x86_64
+  - Linux arm64
+  - Windows x86_64
+  - Windows arm64
+  - Macos x86_64
+  - Macos arm64
 from:
   language: c
   shared: libyaml.so
@@ -21,4 +28,16 @@ from:
       'anon_36': "#Struct buffer #UInt8 #Attr Ptr 1 #AttrEnd size_ size_t size_written size_t #Attr Ptr 1 #AttrEnd"
     functions:
       'yaml_emitter_set_output_string': "#Void emitter yaml_emitter_t #Attr Ptr 1 #AttrEnd output #UInt8 #Attr Ptr 1 #AttrEnd size_ size_t size_written size_t #Attr Ptr 1 #AttrEnd"
-to: stdout
+to:
+  language: odin
+  package: yaml
+  out: yaml.odin
+  trim_prefix:
+    functions: yaml_
+    types: yaml_
+    constants: YAML_
+  trim_suffix:
+    types: _t
+  ignore_arch: false
+  use_when_else: true
+  no_build_tag: true

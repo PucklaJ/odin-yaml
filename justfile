@@ -1,6 +1,6 @@
 set windows-shell := ['powershell.exe']
 
-default: to
+default: bindings
 
 RUNIC := 'runic'
 MAKE := if os() == 'linux' {
@@ -11,16 +11,8 @@ MAKE := if os() == 'linux' {
   'gmake'
 }
 
-from: (make-directory 'build/runestones')
-  {{ RUNIC }} --os linux --arch x86_64 from.yml > build/runestones/libyaml.linux.x86_64
-  {{ RUNIC }} --os linux --arch arm64 from.yml > build/runestones/libyaml.linux.arm64
-  {{ RUNIC }} --os windows --arch x86_64 from.yml > build/runestones/libyaml.windows.x86_64
-  {{ RUNIC }} --os windows --arch arm64 from.yml > build/runestones/libyaml.windows.arm64
-  {{ RUNIC }} --os macos --arch x86_64 from.yml > build/runestones/libyaml.macos.x86_64
-  {{ RUNIC }} --os macos --arch arm64 from.yml > build/runestones/libyaml.macos.arm64
-
-to: from
-  {{ RUNIC }} to.yml
+bindings:
+  {{ RUNIC }}
 
   echo '//+build amd64, arm64' > yaml.odin.tmp
   awk '{gsub(/\^char/, "cstring"); print}' yaml.odin >> yaml.odin.tmp
