@@ -1,6 +1,6 @@
 # Odin YAML
 
-Odin bindings to libyaml
+Odin bindings to libyaml. These bindings have been generated using [runic](https://github.com/Samudevv/runic).
 
 ## libyaml License
 
