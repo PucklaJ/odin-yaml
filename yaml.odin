@@ -1,4 +1,4 @@
-//+build amd64, arm64
+#+build amd64, arm64
 package yaml
 
 NULL_TAG :: `tag:yaml.org,2002:null`
