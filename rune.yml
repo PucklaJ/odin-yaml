@@ -1,33 +1,31 @@
 version: 0
-platforms:
-  - Linux x86_64
-  - Linux arm64
-  - Windows x86_64
-  - Windows arm64
-  - Macos x86_64
-  - Macos arm64
+platforms: Any Any
 from:
   language: c
   shared: libyaml.so
   shared.windows.x86_64: "lib/windows/x86_64/yamld.lib"
-  shared.windows.arm64: "lib/windows/arm64/yamld.lib"
+  shared.windows.x86: "lib/windows/x86/yamld.lib"
+  shared.windows.arm64: "lib/windows/aarch64/yamld.lib"
+  shared.windows.arm32: "lib/windows/arm/yamld.lib"
   shared.macos: libyaml.dylib
   static: libyaml.a
-  static.linux: "lib/linux/libyaml.a"
+  static.linux.x86_64: "lib/linux/x86_64/libyaml.a"
+  static.linux.x86: "lib/linux/x86/libyaml.a"
+  static.linux.arm64: "lib/linux/aarch64/libyaml.a"
+  static.linux.arm32: "lib/linux/arm/libyaml.a"
   static.windows.x86_64: "lib/windows/x86_64/yaml.lib"
-  static.windows.arm64: "lib/windows/arm64/yaml.lib"
+  static.windows.x86: "lib/windows/x86/yaml.lib"
+  static.windows.arm64: "lib/windows/aarch64/yaml.lib"
+  static.windows.arm32: "lib/windows/arm/yaml.lib"
   static.macos.x86_64: "lib/macos/x86_64/libyaml.a"
+  static.macos.x86: "lib/macos/x86/libyaml.a"
+  static.macos.arm64: "lib/macos/aarch64/libyaml.a"
+  static.macos.arm32: "lib/macos/arm/libyaml.a"
   headers: "shared/libyaml/include/yaml.h"
-  ignore:
-    types: FILE
-  overwrite:
-    types:
-      'size_t': "#UInt64"
-      'yaml_read_handler_t': "#FuncPtr #SInt32 data #RawPtr buffer #UInt8 #Attr Ptr 1 #AttrEnd size_ size_t size_read size_t #Attr Ptr 1 #AttrEnd"
-      'yaml_write_handler_t': "#FuncPtr #SInt32 data #RawPtr buffer #UInt8 #Attr Ptr 1 #AttrEnd size_ size_t"
-      'anon_36': "#Struct buffer #UInt8 #Attr Ptr 1 #AttrEnd size_ size_t size_written size_t #Attr Ptr 1 #AttrEnd"
-    functions:
-      'yaml_emitter_set_output_string': "#Void emitter yaml_emitter_t #Attr Ptr 1 #AttrEnd output #UInt8 #Attr Ptr 1 #AttrEnd size_ size_t size_written size_t #Attr Ptr 1 #AttrEnd"
+  includedirs:
+    - stdinc
+  extern:
+    - "stdinc/*"
 to:
   language: odin
   package: yaml
@@ -38,6 +36,6 @@ to:
     constants: YAML_
   trim_suffix:
     types: _t
-  ignore_arch: false
-  use_when_else: true
-  no_build_tag: true
+  extern:
+    sources:
+      'stdinc/stdio.h': 'core:c/libc'
