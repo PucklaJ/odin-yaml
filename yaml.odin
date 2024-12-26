@@ -1,4 +1,4 @@
-#+build linux amd64, darwin arm32, darwin i386, linux arm64, linux i386, darwin arm64, linux arm32, windows amd64, windows, windows arm64, windows i386, windows arm32, darwin amd64, freebsd, openbsd, netbsd, linux, darwin, freebsd i386, openbsd i386, netbsd i386, freebsd arm32, openbsd arm32, netbsd arm32, freebsd amd64, openbsd amd64, netbsd amd64, freebsd arm64, openbsd arm64, netbsd arm64
+#+build linux amd64, linux arm64, linux i386, linux arm32, windows amd64, windows arm64, windows i386, windows arm32, darwin amd64, darwin arm64, darwin i386, darwin arm32, freebsd amd64, openbsd amd64, netbsd amd64, freebsd arm64, openbsd arm64, netbsd arm64, freebsd i386, openbsd i386, netbsd i386, freebsd arm32, openbsd arm32, netbsd arm32
 package yaml
 
 import "core:c/libc"
@@ -588,7 +588,7 @@ when #config(YAML_STATIC, false) {
 
 }
 
-when (ODIN_OS == .Linux) || (ODIN_OS == .FreeBSD || ODIN_OS == .OpenBSD || ODIN_OS == .NetBSD) || (ODIN_OS == .Darwin) {
+when (ODIN_OS == .Linux) || (ODIN_OS == .Darwin) || (ODIN_OS == .FreeBSD || ODIN_OS == .OpenBSD || ODIN_OS == .NetBSD) {
 
 encoding_e :: enum u32 {ANY_ENCODING = 0, UTF8_ENCODING = 1, UTF16LE_ENCODING = 2, UTF16BE_ENCODING = 3, }
 break_e :: enum u32 {ANY_BREAK = 0, CR_BREAK = 1, LN_BREAK = 2, CRLN_BREAK = 3, }
@@ -604,7 +604,7 @@ emitter_state_e :: enum u32 {EMIT_STREAM_START_STATE = 0, EMIT_FIRST_DOCUMENT_ST
 
 }
 
-when (ODIN_OS == .Linux) && (ODIN_ARCH == .i386) || (ODIN_OS == .Linux) && (ODIN_ARCH == .arm32) || (ODIN_OS == .Windows) && (ODIN_ARCH == .i386) || (ODIN_OS == .Windows) && (ODIN_ARCH == .arm32) || (ODIN_OS == .Darwin) && (ODIN_ARCH == .i386) || (ODIN_OS == .Darwin) && (ODIN_ARCH == .arm32) || (ODIN_OS == .FreeBSD || ODIN_OS == .OpenBSD || ODIN_OS == .NetBSD) && (ODIN_ARCH == .i386) || (ODIN_OS == .FreeBSD || ODIN_OS == .OpenBSD || ODIN_OS == .NetBSD) && (ODIN_ARCH == .arm32) {
+when (ODIN_ARCH == .i386) || (ODIN_ARCH == .arm32) {
 
 mark_s :: struct {
     index: u32,
@@ -712,7 +712,7 @@ foreign yaml_runic {
 
 }
 
-when (ODIN_OS == .Linux) && (ODIN_ARCH == .amd64) || (ODIN_OS == .Linux) && (ODIN_ARCH == .arm64) || (ODIN_OS == .Windows) && (ODIN_ARCH == .amd64) || (ODIN_OS == .Windows) && (ODIN_ARCH == .arm64) || (ODIN_OS == .Darwin) && (ODIN_ARCH == .amd64) || (ODIN_OS == .Darwin) && (ODIN_ARCH == .arm64) || (ODIN_OS == .FreeBSD || ODIN_OS == .OpenBSD || ODIN_OS == .NetBSD) && (ODIN_ARCH == .amd64) || (ODIN_OS == .FreeBSD || ODIN_OS == .OpenBSD || ODIN_OS == .NetBSD) && (ODIN_ARCH == .arm64) {
+when (ODIN_ARCH == .amd64) || (ODIN_ARCH == .arm64) {
 
 mark_s :: struct {
     index: u64,
