@@ -1,4 +1,3 @@
-#+build linux amd64, linux arm64, linux i386, linux arm32, windows amd64, windows arm64, windows i386, windows arm32, darwin amd64, darwin arm64, darwin i386, darwin arm32, freebsd amd64, openbsd amd64, netbsd amd64, freebsd arm64, openbsd arm64, netbsd arm64, freebsd i386, openbsd i386, netbsd i386, freebsd arm32, openbsd arm32, netbsd arm32
 package yaml
 
 import "core:c/libc"

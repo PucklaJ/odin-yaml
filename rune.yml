@@ -40,3 +40,4 @@ to:
     sources:
       'stdinc/stdio.h': 'core:c/libc'
   use_when_else: true
+  no_build_tag: true
