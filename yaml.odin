@@ -29,6 +29,11 @@ tag_directive :: tag_directive_s
 encoding :: encoding_e
 break_ :: break_e
 error_type :: error_type_e
+mark_s :: struct {
+    index: uint,
+    line: uint,
+    column: uint,
+}
 mark :: mark_s
 scalar_style :: scalar_style_e
 sequence_style :: sequence_style_e
@@ -47,6 +52,11 @@ tag_struct_anon_3 :: struct {
     handle: cstring,
     suffix: cstring,
 }
+scalar_struct_anon_4 :: struct {
+    value: cstring,
+    length: uint,
+    style: scalar_style,
+}
 version_directive_struct_anon_5 :: struct {
     major: i32,
     minor: i32,
@@ -55,7 +65,15 @@ tag_directive_struct_anon_6 :: struct {
     handle: cstring,
     prefix: cstring,
 }
-data_union_anon_7 :: struct #raw_union {stream_start: stream_start_struct_anon_0, alias: alias_struct_anon_1, anchor: anchor_struct_anon_2, tag: tag_struct_anon_3, scalar: scalar_struct_anon_4, version_directive_m: version_directive_struct_anon_5, tag_directive_m: tag_directive_struct_anon_6, }
+data_union_anon_7 :: struct #raw_union {
+    stream_start: stream_start_struct_anon_0,
+    alias: alias_struct_anon_1,
+    anchor: anchor_struct_anon_2,
+    tag: tag_struct_anon_3,
+    scalar: scalar_struct_anon_4,
+    version_directive_m: version_directive_struct_anon_5,
+    tag_directive_m: tag_directive_struct_anon_6,
+}
 token_s :: struct {
     type: token_type,
     data: data_union_anon_7,
@@ -82,6 +100,15 @@ document_end_struct_anon_11 :: struct {
 alias_struct_anon_12 :: struct {
     anchor: cstring,
 }
+scalar_struct_anon_13 :: struct {
+    anchor: cstring,
+    tag: cstring,
+    value: cstring,
+    length: uint,
+    plain_implicit: i32,
+    quoted_implicit: i32,
+    style: scalar_style,
+}
 sequence_start_struct_anon_14 :: struct {
     anchor: cstring,
     tag: cstring,
@@ -94,7 +121,15 @@ mapping_start_struct_anon_15 :: struct {
     implicit: i32,
     style: mapping_style,
 }
-data_union_anon_16 :: struct #raw_union {stream_start: stream_start_struct_anon_8, document_start: document_start_struct_anon_10, document_end: document_end_struct_anon_11, alias: alias_struct_anon_12, scalar: scalar_struct_anon_13, sequence_start: sequence_start_struct_anon_14, mapping_start: mapping_start_struct_anon_15, }
+data_union_anon_16 :: struct #raw_union {
+    stream_start: stream_start_struct_anon_8,
+    document_start: document_start_struct_anon_10,
+    document_end: document_end_struct_anon_11,
+    alias: alias_struct_anon_12,
+    scalar: scalar_struct_anon_13,
+    sequence_start: sequence_start_struct_anon_14,
+    mapping_start: mapping_start_struct_anon_15,
+}
 event_s :: struct {
     type: event_type,
     data: data_union_anon_16,
@@ -103,6 +138,11 @@ event_s :: struct {
 }
 event :: event_s
 node_type :: node_type_e
+scalar_struct_anon_17 :: struct {
+    value: cstring,
+    length: uint,
+    style: scalar_style,
+}
 node_item :: i32
 items_struct_anon_18 :: struct {
     start: ^node_item,
@@ -127,7 +167,11 @@ mapping_struct_anon_21 :: struct {
     pairs: pairs_struct_anon_20,
     style: mapping_style,
 }
-data_union_anon_22 :: struct #raw_union {scalar: scalar_struct_anon_17, sequence: sequence_struct_anon_19, mapping: mapping_struct_anon_21, }
+data_union_anon_22 :: struct #raw_union {
+    scalar: scalar_struct_anon_17,
+    sequence: sequence_struct_anon_19,
+    mapping: mapping_struct_anon_21,
+}
 node_s :: struct {
     type: node_type,
     tag: cstring,
@@ -155,6 +199,13 @@ document_s :: struct {
     end_mark: mark,
 }
 document :: document_s
+read_handler :: #type proc "c" (data: rawptr, buffer: ^u8, size: uint, size_read: ^uint) -> i32
+simple_key_s :: struct {
+    possible: i32,
+    required: i32,
+    token_number: uint,
+    mark_m: mark,
+}
 simple_key :: simple_key_s
 parser_state :: parser_state_e
 alias_data_s :: struct {
@@ -168,7 +219,10 @@ string_struct_anon_25 :: struct {
     end: ^u8,
     current: ^u8,
 }
-input_union_anon_26 :: struct #raw_union {string_m: string_struct_anon_25, file: ^libc.FILE, }
+input_union_anon_26 :: struct #raw_union {
+    string_m: string_struct_anon_25,
+    file: ^libc.FILE,
+}
 buffer_struct_anon_27 :: struct {
     start: cstring,
     end: cstring,
@@ -217,7 +271,43 @@ aliases_struct_anon_35 :: struct {
     end: ^alias_data,
     top: ^alias_data,
 }
+parser_s :: struct {
+    error: error_type,
+    problem: cstring,
+    problem_offset: uint,
+    problem_value: i32,
+    problem_mark: mark,
+    context_m: cstring,
+    context_mark: mark,
+    read_handler_m: ^read_handler,
+    read_handler_data: rawptr,
+    input: input_union_anon_26,
+    eof: i32,
+    buffer: buffer_struct_anon_27,
+    unread: uint,
+    raw_buffer: raw_buffer_struct_anon_28,
+    encoding_m: encoding,
+    offset: uint,
+    mark_m: mark,
+    stream_start_produced: i32,
+    stream_end_produced: i32,
+    flow_level: i32,
+    tokens: tokens_struct_anon_29,
+    tokens_parsed: uint,
+    token_available: i32,
+    indents: indents_struct_anon_30,
+    indent: i32,
+    simple_key_allowed: i32,
+    simple_keys: simple_keys_struct_anon_31,
+    states: states_struct_anon_32,
+    state: parser_state,
+    marks: marks_struct_anon_33,
+    tag_directives: tag_directives_struct_anon_34,
+    aliases: aliases_struct_anon_35,
+    document_m: ^document,
+}
 parser :: parser_s
+write_handler :: #type proc "c" (data: rawptr, buffer: ^u8, size: uint) -> i32
 emitter_state :: emitter_state_e
 anchors_s :: struct {
     references: i32,
@@ -225,7 +315,15 @@ anchors_s :: struct {
     serialized: i32,
 }
 anchors :: anchors_s
-output_union_anon_37 :: struct #raw_union {string_m: string_struct_anon_36, file: ^libc.FILE, }
+string_struct_anon_36 :: struct {
+    buffer: ^u8,
+    size: uint,
+    size_written: ^uint,
+}
+output_union_anon_37 :: struct #raw_union {
+    string_m: string_struct_anon_36,
+    file: ^libc.FILE,
+}
 buffer_struct_anon_38 :: struct {
     start: cstring,
     end: cstring,
@@ -258,6 +356,27 @@ tag_directives_struct_anon_43 :: struct {
     start: ^tag_directive,
     end: ^tag_directive,
     top: ^tag_directive,
+}
+anchor_data_struct_anon_44 :: struct {
+    anchor: cstring,
+    anchor_length: uint,
+    alias: i32,
+}
+tag_data_struct_anon_45 :: struct {
+    handle: cstring,
+    handle_length: uint,
+    suffix: cstring,
+    suffix_length: uint,
+}
+scalar_data_struct_anon_46 :: struct {
+    value: cstring,
+    length: uint,
+    multiline: i32,
+    flow_plain_allowed: i32,
+    block_plain_allowed: i32,
+    single_quoted_allowed: i32,
+    block_allowed: i32,
+    style: scalar_style,
 }
 emitter_s :: struct {
     error: error_type,
@@ -377,6 +496,9 @@ foreign yaml_runic {
     @(link_name = "yaml_parser_delete")
     parser_delete :: proc(parser_p: ^parser) ---
 
+    @(link_name = "yaml_parser_set_input_string")
+    parser_set_input_string :: proc(parser_p: ^parser, input: ^u8, size: uint) ---
+
     @(link_name = "yaml_parser_set_input_file")
     parser_set_input_file :: proc(parser_p: ^parser, file: ^libc.FILE) ---
 
@@ -400,6 +522,9 @@ foreign yaml_runic {
 
     @(link_name = "yaml_emitter_delete")
     emitter_delete :: proc(emitter_p: ^emitter) ---
+
+    @(link_name = "yaml_emitter_set_output_string")
+    emitter_set_output_string :: proc(emitter_p: ^emitter, output: ^u8, size: uint, size_written: ^uint) ---
 
     @(link_name = "yaml_emitter_set_output_file")
     emitter_set_output_file :: proc(emitter_p: ^emitter, file: ^libc.FILE) ---
@@ -442,6 +567,38 @@ foreign yaml_runic {
 
 }
 
+when (ODIN_OS == .Windows) {
+
+encoding_e :: enum i32 {ANY_ENCODING = 0, UTF8_ENCODING = 1, UTF16LE_ENCODING = 2, UTF16BE_ENCODING = 3 }
+break_e :: enum i32 {ANY_BREAK = 0, CR_BREAK = 1, LN_BREAK = 2, CRLN_BREAK = 3 }
+error_type_e :: enum i32 {NO_ERROR = 0, MEMORY_ERROR = 1, READER_ERROR = 2, SCANNER_ERROR = 3, PARSER_ERROR = 4, COMPOSER_ERROR = 5, WRITER_ERROR = 6, EMITTER_ERROR = 7 }
+scalar_style_e :: enum i32 {ANY_SCALAR_STYLE = 0, PLAIN_SCALAR_STYLE = 1, SINGLE_QUOTED_SCALAR_STYLE = 2, DOUBLE_QUOTED_SCALAR_STYLE = 3, LITERAL_SCALAR_STYLE = 4, FOLDED_SCALAR_STYLE = 5 }
+sequence_style_e :: enum i32 {ANY_SEQUENCE_STYLE = 0, BLOCK_SEQUENCE_STYLE = 1, FLOW_SEQUENCE_STYLE = 2 }
+mapping_style_e :: enum i32 {ANY_MAPPING_STYLE = 0, BLOCK_MAPPING_STYLE = 1, FLOW_MAPPING_STYLE = 2 }
+token_type_e :: enum i32 {NO_TOKEN = 0, STREAM_START_TOKEN = 1, STREAM_END_TOKEN = 2, VERSION_DIRECTIVE_TOKEN = 3, TAG_DIRECTIVE_TOKEN = 4, DOCUMENT_START_TOKEN = 5, DOCUMENT_END_TOKEN = 6, BLOCK_SEQUENCE_START_TOKEN = 7, BLOCK_MAPPING_START_TOKEN = 8, BLOCK_END_TOKEN = 9, FLOW_SEQUENCE_START_TOKEN = 10, FLOW_SEQUENCE_END_TOKEN = 11, FLOW_MAPPING_START_TOKEN = 12, FLOW_MAPPING_END_TOKEN = 13, BLOCK_ENTRY_TOKEN = 14, FLOW_ENTRY_TOKEN = 15, KEY_TOKEN = 16, VALUE_TOKEN = 17, ALIAS_TOKEN = 18, ANCHOR_TOKEN = 19, TAG_TOKEN = 20, SCALAR_TOKEN = 21 }
+event_type_e :: enum i32 {NO_EVENT = 0, STREAM_START_EVENT = 1, STREAM_END_EVENT = 2, DOCUMENT_START_EVENT = 3, DOCUMENT_END_EVENT = 4, ALIAS_EVENT = 5, SCALAR_EVENT = 6, SEQUENCE_START_EVENT = 7, SEQUENCE_END_EVENT = 8, MAPPING_START_EVENT = 9, MAPPING_END_EVENT = 10 }
+node_type_e :: enum i32 {NO_NODE = 0, SCALAR_NODE = 1, SEQUENCE_NODE = 2, MAPPING_NODE = 3 }
+parser_state_e :: enum i32 {PARSE_STREAM_START_STATE = 0, PARSE_IMPLICIT_DOCUMENT_START_STATE = 1, PARSE_DOCUMENT_START_STATE = 2, PARSE_DOCUMENT_CONTENT_STATE = 3, PARSE_DOCUMENT_END_STATE = 4, PARSE_BLOCK_NODE_STATE = 5, PARSE_BLOCK_NODE_OR_INDENTLESS_SEQUENCE_STATE = 6, PARSE_FLOW_NODE_STATE = 7, PARSE_BLOCK_SEQUENCE_FIRST_ENTRY_STATE = 8, PARSE_BLOCK_SEQUENCE_ENTRY_STATE = 9, PARSE_INDENTLESS_SEQUENCE_ENTRY_STATE = 10, PARSE_BLOCK_MAPPING_FIRST_KEY_STATE = 11, PARSE_BLOCK_MAPPING_KEY_STATE = 12, PARSE_BLOCK_MAPPING_VALUE_STATE = 13, PARSE_FLOW_SEQUENCE_FIRST_ENTRY_STATE = 14, PARSE_FLOW_SEQUENCE_ENTRY_STATE = 15, PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_KEY_STATE = 16, PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_VALUE_STATE = 17, PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_END_STATE = 18, PARSE_FLOW_MAPPING_FIRST_KEY_STATE = 19, PARSE_FLOW_MAPPING_KEY_STATE = 20, PARSE_FLOW_MAPPING_VALUE_STATE = 21, PARSE_FLOW_MAPPING_EMPTY_VALUE_STATE = 22, PARSE_END_STATE = 23 }
+emitter_state_e :: enum i32 {EMIT_STREAM_START_STATE = 0, EMIT_FIRST_DOCUMENT_START_STATE = 1, EMIT_DOCUMENT_START_STATE = 2, EMIT_DOCUMENT_CONTENT_STATE = 3, EMIT_DOCUMENT_END_STATE = 4, EMIT_FLOW_SEQUENCE_FIRST_ITEM_STATE = 5, EMIT_FLOW_SEQUENCE_ITEM_STATE = 6, EMIT_FLOW_MAPPING_FIRST_KEY_STATE = 7, EMIT_FLOW_MAPPING_KEY_STATE = 8, EMIT_FLOW_MAPPING_SIMPLE_VALUE_STATE = 9, EMIT_FLOW_MAPPING_VALUE_STATE = 10, EMIT_BLOCK_SEQUENCE_FIRST_ITEM_STATE = 11, EMIT_BLOCK_SEQUENCE_ITEM_STATE = 12, EMIT_BLOCK_MAPPING_FIRST_KEY_STATE = 13, EMIT_BLOCK_MAPPING_KEY_STATE = 14, EMIT_BLOCK_MAPPING_SIMPLE_VALUE_STATE = 15, EMIT_BLOCK_MAPPING_VALUE_STATE = 16, EMIT_END_STATE = 17 }
+
+}
+
+when (ODIN_OS == .Linux) || (ODIN_OS == .Darwin) || (ODIN_OS == .FreeBSD || ODIN_OS == .OpenBSD || ODIN_OS == .NetBSD) {
+
+encoding_e :: enum u32 {ANY_ENCODING = 0, UTF8_ENCODING = 1, UTF16LE_ENCODING = 2, UTF16BE_ENCODING = 3 }
+break_e :: enum u32 {ANY_BREAK = 0, CR_BREAK = 1, LN_BREAK = 2, CRLN_BREAK = 3 }
+error_type_e :: enum u32 {NO_ERROR = 0, MEMORY_ERROR = 1, READER_ERROR = 2, SCANNER_ERROR = 3, PARSER_ERROR = 4, COMPOSER_ERROR = 5, WRITER_ERROR = 6, EMITTER_ERROR = 7 }
+scalar_style_e :: enum u32 {ANY_SCALAR_STYLE = 0, PLAIN_SCALAR_STYLE = 1, SINGLE_QUOTED_SCALAR_STYLE = 2, DOUBLE_QUOTED_SCALAR_STYLE = 3, LITERAL_SCALAR_STYLE = 4, FOLDED_SCALAR_STYLE = 5 }
+sequence_style_e :: enum u32 {ANY_SEQUENCE_STYLE = 0, BLOCK_SEQUENCE_STYLE = 1, FLOW_SEQUENCE_STYLE = 2 }
+mapping_style_e :: enum u32 {ANY_MAPPING_STYLE = 0, BLOCK_MAPPING_STYLE = 1, FLOW_MAPPING_STYLE = 2 }
+token_type_e :: enum u32 {NO_TOKEN = 0, STREAM_START_TOKEN = 1, STREAM_END_TOKEN = 2, VERSION_DIRECTIVE_TOKEN = 3, TAG_DIRECTIVE_TOKEN = 4, DOCUMENT_START_TOKEN = 5, DOCUMENT_END_TOKEN = 6, BLOCK_SEQUENCE_START_TOKEN = 7, BLOCK_MAPPING_START_TOKEN = 8, BLOCK_END_TOKEN = 9, FLOW_SEQUENCE_START_TOKEN = 10, FLOW_SEQUENCE_END_TOKEN = 11, FLOW_MAPPING_START_TOKEN = 12, FLOW_MAPPING_END_TOKEN = 13, BLOCK_ENTRY_TOKEN = 14, FLOW_ENTRY_TOKEN = 15, KEY_TOKEN = 16, VALUE_TOKEN = 17, ALIAS_TOKEN = 18, ANCHOR_TOKEN = 19, TAG_TOKEN = 20, SCALAR_TOKEN = 21 }
+event_type_e :: enum u32 {NO_EVENT = 0, STREAM_START_EVENT = 1, STREAM_END_EVENT = 2, DOCUMENT_START_EVENT = 3, DOCUMENT_END_EVENT = 4, ALIAS_EVENT = 5, SCALAR_EVENT = 6, SEQUENCE_START_EVENT = 7, SEQUENCE_END_EVENT = 8, MAPPING_START_EVENT = 9, MAPPING_END_EVENT = 10 }
+node_type_e :: enum u32 {NO_NODE = 0, SCALAR_NODE = 1, SEQUENCE_NODE = 2, MAPPING_NODE = 3 }
+parser_state_e :: enum u32 {PARSE_STREAM_START_STATE = 0, PARSE_IMPLICIT_DOCUMENT_START_STATE = 1, PARSE_DOCUMENT_START_STATE = 2, PARSE_DOCUMENT_CONTENT_STATE = 3, PARSE_DOCUMENT_END_STATE = 4, PARSE_BLOCK_NODE_STATE = 5, PARSE_BLOCK_NODE_OR_INDENTLESS_SEQUENCE_STATE = 6, PARSE_FLOW_NODE_STATE = 7, PARSE_BLOCK_SEQUENCE_FIRST_ENTRY_STATE = 8, PARSE_BLOCK_SEQUENCE_ENTRY_STATE = 9, PARSE_INDENTLESS_SEQUENCE_ENTRY_STATE = 10, PARSE_BLOCK_MAPPING_FIRST_KEY_STATE = 11, PARSE_BLOCK_MAPPING_KEY_STATE = 12, PARSE_BLOCK_MAPPING_VALUE_STATE = 13, PARSE_FLOW_SEQUENCE_FIRST_ENTRY_STATE = 14, PARSE_FLOW_SEQUENCE_ENTRY_STATE = 15, PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_KEY_STATE = 16, PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_VALUE_STATE = 17, PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_END_STATE = 18, PARSE_FLOW_MAPPING_FIRST_KEY_STATE = 19, PARSE_FLOW_MAPPING_KEY_STATE = 20, PARSE_FLOW_MAPPING_VALUE_STATE = 21, PARSE_FLOW_MAPPING_EMPTY_VALUE_STATE = 22, PARSE_END_STATE = 23 }
+emitter_state_e :: enum u32 {EMIT_STREAM_START_STATE = 0, EMIT_FIRST_DOCUMENT_START_STATE = 1, EMIT_DOCUMENT_START_STATE = 2, EMIT_DOCUMENT_CONTENT_STATE = 3, EMIT_DOCUMENT_END_STATE = 4, EMIT_FLOW_SEQUENCE_FIRST_ITEM_STATE = 5, EMIT_FLOW_SEQUENCE_ITEM_STATE = 6, EMIT_FLOW_MAPPING_FIRST_KEY_STATE = 7, EMIT_FLOW_MAPPING_KEY_STATE = 8, EMIT_FLOW_MAPPING_SIMPLE_VALUE_STATE = 9, EMIT_FLOW_MAPPING_VALUE_STATE = 10, EMIT_BLOCK_SEQUENCE_FIRST_ITEM_STATE = 11, EMIT_BLOCK_SEQUENCE_ITEM_STATE = 12, EMIT_BLOCK_MAPPING_FIRST_KEY_STATE = 13, EMIT_BLOCK_MAPPING_KEY_STATE = 14, EMIT_BLOCK_MAPPING_SIMPLE_VALUE_STATE = 15, EMIT_BLOCK_MAPPING_VALUE_STATE = 16, EMIT_END_STATE = 17 }
+
+}
+
 when (ODIN_OS == .Linux) && (ODIN_ARCH == .amd64) {
 
 when #config(YAML_STATIC, false) {
@@ -479,22 +636,6 @@ when #config(YAML_STATIC, false) {
 } else {
     foreign import yaml_runic "system:yaml"
 }
-
-}
-
-when (ODIN_OS == .Windows) {
-
-encoding_e :: enum i32 {ANY_ENCODING = 0, UTF8_ENCODING = 1, UTF16LE_ENCODING = 2, UTF16BE_ENCODING = 3, }
-break_e :: enum i32 {ANY_BREAK = 0, CR_BREAK = 1, LN_BREAK = 2, CRLN_BREAK = 3, }
-error_type_e :: enum i32 {NO_ERROR = 0, MEMORY_ERROR = 1, READER_ERROR = 2, SCANNER_ERROR = 3, PARSER_ERROR = 4, COMPOSER_ERROR = 5, WRITER_ERROR = 6, EMITTER_ERROR = 7, }
-scalar_style_e :: enum i32 {ANY_SCALAR_STYLE = 0, PLAIN_SCALAR_STYLE = 1, SINGLE_QUOTED_SCALAR_STYLE = 2, DOUBLE_QUOTED_SCALAR_STYLE = 3, LITERAL_SCALAR_STYLE = 4, FOLDED_SCALAR_STYLE = 5, }
-sequence_style_e :: enum i32 {ANY_SEQUENCE_STYLE = 0, BLOCK_SEQUENCE_STYLE = 1, FLOW_SEQUENCE_STYLE = 2, }
-mapping_style_e :: enum i32 {ANY_MAPPING_STYLE = 0, BLOCK_MAPPING_STYLE = 1, FLOW_MAPPING_STYLE = 2, }
-token_type_e :: enum i32 {NO_TOKEN = 0, STREAM_START_TOKEN = 1, STREAM_END_TOKEN = 2, VERSION_DIRECTIVE_TOKEN = 3, TAG_DIRECTIVE_TOKEN = 4, DOCUMENT_START_TOKEN = 5, DOCUMENT_END_TOKEN = 6, BLOCK_SEQUENCE_START_TOKEN = 7, BLOCK_MAPPING_START_TOKEN = 8, BLOCK_END_TOKEN = 9, FLOW_SEQUENCE_START_TOKEN = 10, FLOW_SEQUENCE_END_TOKEN = 11, FLOW_MAPPING_START_TOKEN = 12, FLOW_MAPPING_END_TOKEN = 13, BLOCK_ENTRY_TOKEN = 14, FLOW_ENTRY_TOKEN = 15, KEY_TOKEN = 16, VALUE_TOKEN = 17, ALIAS_TOKEN = 18, ANCHOR_TOKEN = 19, TAG_TOKEN = 20, SCALAR_TOKEN = 21, }
-event_type_e :: enum i32 {NO_EVENT = 0, STREAM_START_EVENT = 1, STREAM_END_EVENT = 2, DOCUMENT_START_EVENT = 3, DOCUMENT_END_EVENT = 4, ALIAS_EVENT = 5, SCALAR_EVENT = 6, SEQUENCE_START_EVENT = 7, SEQUENCE_END_EVENT = 8, MAPPING_START_EVENT = 9, MAPPING_END_EVENT = 10, }
-node_type_e :: enum i32 {NO_NODE = 0, SCALAR_NODE = 1, SEQUENCE_NODE = 2, MAPPING_NODE = 3, }
-parser_state_e :: enum i32 {PARSE_STREAM_START_STATE = 0, PARSE_IMPLICIT_DOCUMENT_START_STATE = 1, PARSE_DOCUMENT_START_STATE = 2, PARSE_DOCUMENT_CONTENT_STATE = 3, PARSE_DOCUMENT_END_STATE = 4, PARSE_BLOCK_NODE_STATE = 5, PARSE_BLOCK_NODE_OR_INDENTLESS_SEQUENCE_STATE = 6, PARSE_FLOW_NODE_STATE = 7, PARSE_BLOCK_SEQUENCE_FIRST_ENTRY_STATE = 8, PARSE_BLOCK_SEQUENCE_ENTRY_STATE = 9, PARSE_INDENTLESS_SEQUENCE_ENTRY_STATE = 10, PARSE_BLOCK_MAPPING_FIRST_KEY_STATE = 11, PARSE_BLOCK_MAPPING_KEY_STATE = 12, PARSE_BLOCK_MAPPING_VALUE_STATE = 13, PARSE_FLOW_SEQUENCE_FIRST_ENTRY_STATE = 14, PARSE_FLOW_SEQUENCE_ENTRY_STATE = 15, PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_KEY_STATE = 16, PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_VALUE_STATE = 17, PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_END_STATE = 18, PARSE_FLOW_MAPPING_FIRST_KEY_STATE = 19, PARSE_FLOW_MAPPING_KEY_STATE = 20, PARSE_FLOW_MAPPING_VALUE_STATE = 21, PARSE_FLOW_MAPPING_EMPTY_VALUE_STATE = 22, PARSE_END_STATE = 23, }
-emitter_state_e :: enum i32 {EMIT_STREAM_START_STATE = 0, EMIT_FIRST_DOCUMENT_START_STATE = 1, EMIT_DOCUMENT_START_STATE = 2, EMIT_DOCUMENT_CONTENT_STATE = 3, EMIT_DOCUMENT_END_STATE = 4, EMIT_FLOW_SEQUENCE_FIRST_ITEM_STATE = 5, EMIT_FLOW_SEQUENCE_ITEM_STATE = 6, EMIT_FLOW_MAPPING_FIRST_KEY_STATE = 7, EMIT_FLOW_MAPPING_KEY_STATE = 8, EMIT_FLOW_MAPPING_SIMPLE_VALUE_STATE = 9, EMIT_FLOW_MAPPING_VALUE_STATE = 10, EMIT_BLOCK_SEQUENCE_FIRST_ITEM_STATE = 11, EMIT_BLOCK_SEQUENCE_ITEM_STATE = 12, EMIT_BLOCK_MAPPING_FIRST_KEY_STATE = 13, EMIT_BLOCK_MAPPING_KEY_STATE = 14, EMIT_BLOCK_MAPPING_SIMPLE_VALUE_STATE = 15, EMIT_BLOCK_MAPPING_VALUE_STATE = 16, EMIT_END_STATE = 17, }
 
 }
 
@@ -584,238 +725,6 @@ when #config(YAML_STATIC, false) {
     foreign import yaml_runic "system:libyaml.a"
 } else {
     foreign import yaml_runic "system:yaml"
-}
-
-}
-
-when (ODIN_OS == .Linux) || (ODIN_OS == .Darwin) || (ODIN_OS == .FreeBSD || ODIN_OS == .OpenBSD || ODIN_OS == .NetBSD) {
-
-encoding_e :: enum u32 {ANY_ENCODING = 0, UTF8_ENCODING = 1, UTF16LE_ENCODING = 2, UTF16BE_ENCODING = 3, }
-break_e :: enum u32 {ANY_BREAK = 0, CR_BREAK = 1, LN_BREAK = 2, CRLN_BREAK = 3, }
-error_type_e :: enum u32 {NO_ERROR = 0, MEMORY_ERROR = 1, READER_ERROR = 2, SCANNER_ERROR = 3, PARSER_ERROR = 4, COMPOSER_ERROR = 5, WRITER_ERROR = 6, EMITTER_ERROR = 7, }
-scalar_style_e :: enum u32 {ANY_SCALAR_STYLE = 0, PLAIN_SCALAR_STYLE = 1, SINGLE_QUOTED_SCALAR_STYLE = 2, DOUBLE_QUOTED_SCALAR_STYLE = 3, LITERAL_SCALAR_STYLE = 4, FOLDED_SCALAR_STYLE = 5, }
-sequence_style_e :: enum u32 {ANY_SEQUENCE_STYLE = 0, BLOCK_SEQUENCE_STYLE = 1, FLOW_SEQUENCE_STYLE = 2, }
-mapping_style_e :: enum u32 {ANY_MAPPING_STYLE = 0, BLOCK_MAPPING_STYLE = 1, FLOW_MAPPING_STYLE = 2, }
-token_type_e :: enum u32 {NO_TOKEN = 0, STREAM_START_TOKEN = 1, STREAM_END_TOKEN = 2, VERSION_DIRECTIVE_TOKEN = 3, TAG_DIRECTIVE_TOKEN = 4, DOCUMENT_START_TOKEN = 5, DOCUMENT_END_TOKEN = 6, BLOCK_SEQUENCE_START_TOKEN = 7, BLOCK_MAPPING_START_TOKEN = 8, BLOCK_END_TOKEN = 9, FLOW_SEQUENCE_START_TOKEN = 10, FLOW_SEQUENCE_END_TOKEN = 11, FLOW_MAPPING_START_TOKEN = 12, FLOW_MAPPING_END_TOKEN = 13, BLOCK_ENTRY_TOKEN = 14, FLOW_ENTRY_TOKEN = 15, KEY_TOKEN = 16, VALUE_TOKEN = 17, ALIAS_TOKEN = 18, ANCHOR_TOKEN = 19, TAG_TOKEN = 20, SCALAR_TOKEN = 21, }
-event_type_e :: enum u32 {NO_EVENT = 0, STREAM_START_EVENT = 1, STREAM_END_EVENT = 2, DOCUMENT_START_EVENT = 3, DOCUMENT_END_EVENT = 4, ALIAS_EVENT = 5, SCALAR_EVENT = 6, SEQUENCE_START_EVENT = 7, SEQUENCE_END_EVENT = 8, MAPPING_START_EVENT = 9, MAPPING_END_EVENT = 10, }
-node_type_e :: enum u32 {NO_NODE = 0, SCALAR_NODE = 1, SEQUENCE_NODE = 2, MAPPING_NODE = 3, }
-parser_state_e :: enum u32 {PARSE_STREAM_START_STATE = 0, PARSE_IMPLICIT_DOCUMENT_START_STATE = 1, PARSE_DOCUMENT_START_STATE = 2, PARSE_DOCUMENT_CONTENT_STATE = 3, PARSE_DOCUMENT_END_STATE = 4, PARSE_BLOCK_NODE_STATE = 5, PARSE_BLOCK_NODE_OR_INDENTLESS_SEQUENCE_STATE = 6, PARSE_FLOW_NODE_STATE = 7, PARSE_BLOCK_SEQUENCE_FIRST_ENTRY_STATE = 8, PARSE_BLOCK_SEQUENCE_ENTRY_STATE = 9, PARSE_INDENTLESS_SEQUENCE_ENTRY_STATE = 10, PARSE_BLOCK_MAPPING_FIRST_KEY_STATE = 11, PARSE_BLOCK_MAPPING_KEY_STATE = 12, PARSE_BLOCK_MAPPING_VALUE_STATE = 13, PARSE_FLOW_SEQUENCE_FIRST_ENTRY_STATE = 14, PARSE_FLOW_SEQUENCE_ENTRY_STATE = 15, PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_KEY_STATE = 16, PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_VALUE_STATE = 17, PARSE_FLOW_SEQUENCE_ENTRY_MAPPING_END_STATE = 18, PARSE_FLOW_MAPPING_FIRST_KEY_STATE = 19, PARSE_FLOW_MAPPING_KEY_STATE = 20, PARSE_FLOW_MAPPING_VALUE_STATE = 21, PARSE_FLOW_MAPPING_EMPTY_VALUE_STATE = 22, PARSE_END_STATE = 23, }
-emitter_state_e :: enum u32 {EMIT_STREAM_START_STATE = 0, EMIT_FIRST_DOCUMENT_START_STATE = 1, EMIT_DOCUMENT_START_STATE = 2, EMIT_DOCUMENT_CONTENT_STATE = 3, EMIT_DOCUMENT_END_STATE = 4, EMIT_FLOW_SEQUENCE_FIRST_ITEM_STATE = 5, EMIT_FLOW_SEQUENCE_ITEM_STATE = 6, EMIT_FLOW_MAPPING_FIRST_KEY_STATE = 7, EMIT_FLOW_MAPPING_KEY_STATE = 8, EMIT_FLOW_MAPPING_SIMPLE_VALUE_STATE = 9, EMIT_FLOW_MAPPING_VALUE_STATE = 10, EMIT_BLOCK_SEQUENCE_FIRST_ITEM_STATE = 11, EMIT_BLOCK_SEQUENCE_ITEM_STATE = 12, EMIT_BLOCK_MAPPING_FIRST_KEY_STATE = 13, EMIT_BLOCK_MAPPING_KEY_STATE = 14, EMIT_BLOCK_MAPPING_SIMPLE_VALUE_STATE = 15, EMIT_BLOCK_MAPPING_VALUE_STATE = 16, EMIT_END_STATE = 17, }
-
-}
-
-when (ODIN_ARCH == .amd64) || (ODIN_ARCH == .arm64) {
-
-mark_s :: struct {
-    index: u64,
-    line: u64,
-    column: u64,
-}
-scalar_struct_anon_4 :: struct {
-    value: cstring,
-    length: u64,
-    style: scalar_style,
-}
-scalar_struct_anon_13 :: struct {
-    anchor: cstring,
-    tag: cstring,
-    value: cstring,
-    length: u64,
-    plain_implicit: i32,
-    quoted_implicit: i32,
-    style: scalar_style,
-}
-scalar_struct_anon_17 :: struct {
-    value: cstring,
-    length: u64,
-    style: scalar_style,
-}
-read_handler :: #type proc "c" (data: rawptr, buffer: ^u8, size: u64, size_read: ^u64) -> i32
-simple_key_s :: struct {
-    possible: i32,
-    required: i32,
-    token_number: u64,
-    mark_m: mark,
-}
-parser_s :: struct {
-    error: error_type,
-    problem: cstring,
-    problem_offset: u64,
-    problem_value: i32,
-    problem_mark: mark,
-    context_m: cstring,
-    context_mark: mark,
-    read_handler_m: ^read_handler,
-    read_handler_data: rawptr,
-    input: input_union_anon_26,
-    eof: i32,
-    buffer: buffer_struct_anon_27,
-    unread: u64,
-    raw_buffer: raw_buffer_struct_anon_28,
-    encoding_m: encoding,
-    offset: u64,
-    mark_m: mark,
-    stream_start_produced: i32,
-    stream_end_produced: i32,
-    flow_level: i32,
-    tokens: tokens_struct_anon_29,
-    tokens_parsed: u64,
-    token_available: i32,
-    indents: indents_struct_anon_30,
-    indent: i32,
-    simple_key_allowed: i32,
-    simple_keys: simple_keys_struct_anon_31,
-    states: states_struct_anon_32,
-    state: parser_state,
-    marks: marks_struct_anon_33,
-    tag_directives: tag_directives_struct_anon_34,
-    aliases: aliases_struct_anon_35,
-    document_m: ^document,
-}
-write_handler :: #type proc "c" (data: rawptr, buffer: ^u8, size: u64) -> i32
-string_struct_anon_36 :: struct {
-    buffer: ^u8,
-    size: u64,
-    size_written: ^u64,
-}
-anchor_data_struct_anon_44 :: struct {
-    anchor: cstring,
-    anchor_length: u64,
-    alias: i32,
-}
-tag_data_struct_anon_45 :: struct {
-    handle: cstring,
-    handle_length: u64,
-    suffix: cstring,
-    suffix_length: u64,
-}
-scalar_data_struct_anon_46 :: struct {
-    value: cstring,
-    length: u64,
-    multiline: i32,
-    flow_plain_allowed: i32,
-    block_plain_allowed: i32,
-    single_quoted_allowed: i32,
-    block_allowed: i32,
-    style: scalar_style,
-}
-
-@(default_calling_convention = "c")
-foreign yaml_runic {
-    @(link_name = "yaml_parser_set_input_string")
-    parser_set_input_string :: proc(parser_p: ^parser, input: ^u8, size: u64) ---
-
-    @(link_name = "yaml_emitter_set_output_string")
-    emitter_set_output_string :: proc(emitter_p: ^emitter, output: ^u8, size: u64, size_written: ^u64) ---
-
-}
-
-}
-
-when (ODIN_ARCH == .i386) || (ODIN_ARCH == .arm32) {
-
-mark_s :: struct {
-    index: u32,
-    line: u32,
-    column: u32,
-}
-scalar_struct_anon_4 :: struct {
-    value: cstring,
-    length: u32,
-    style: scalar_style,
-}
-scalar_struct_anon_13 :: struct {
-    anchor: cstring,
-    tag: cstring,
-    value: cstring,
-    length: u32,
-    plain_implicit: i32,
-    quoted_implicit: i32,
-    style: scalar_style,
-}
-scalar_struct_anon_17 :: struct {
-    value: cstring,
-    length: u32,
-    style: scalar_style,
-}
-read_handler :: #type proc "c" (data: rawptr, buffer: ^u8, size: u32, size_read: ^u32) -> i32
-simple_key_s :: struct {
-    possible: i32,
-    required: i32,
-    token_number: u32,
-    mark_m: mark,
-}
-parser_s :: struct {
-    error: error_type,
-    problem: cstring,
-    problem_offset: u32,
-    problem_value: i32,
-    problem_mark: mark,
-    context_m: cstring,
-    context_mark: mark,
-    read_handler_m: ^read_handler,
-    read_handler_data: rawptr,
-    input: input_union_anon_26,
-    eof: i32,
-    buffer: buffer_struct_anon_27,
-    unread: u32,
-    raw_buffer: raw_buffer_struct_anon_28,
-    encoding_m: encoding,
-    offset: u32,
-    mark_m: mark,
-    stream_start_produced: i32,
-    stream_end_produced: i32,
-    flow_level: i32,
-    tokens: tokens_struct_anon_29,
-    tokens_parsed: u32,
-    token_available: i32,
-    indents: indents_struct_anon_30,
-    indent: i32,
-    simple_key_allowed: i32,
-    simple_keys: simple_keys_struct_anon_31,
-    states: states_struct_anon_32,
-    state: parser_state,
-    marks: marks_struct_anon_33,
-    tag_directives: tag_directives_struct_anon_34,
-    aliases: aliases_struct_anon_35,
-    document_m: ^document,
-}
-write_handler :: #type proc "c" (data: rawptr, buffer: ^u8, size: u32) -> i32
-string_struct_anon_36 :: struct {
-    buffer: ^u8,
-    size: u32,
-    size_written: ^u32,
-}
-anchor_data_struct_anon_44 :: struct {
-    anchor: cstring,
-    anchor_length: u32,
-    alias: i32,
-}
-tag_data_struct_anon_45 :: struct {
-    handle: cstring,
-    handle_length: u32,
-    suffix: cstring,
-    suffix_length: u32,
-}
-scalar_data_struct_anon_46 :: struct {
-    value: cstring,
-    length: u32,
-    multiline: i32,
-    flow_plain_allowed: i32,
-    block_plain_allowed: i32,
-    single_quoted_allowed: i32,
-    block_allowed: i32,
-    style: scalar_style,
-}
-
-@(default_calling_convention = "c")
-foreign yaml_runic {
-    @(link_name = "yaml_parser_set_input_string")
-    parser_set_input_string :: proc(parser_p: ^parser, input: ^u8, size: u32) ---
-
-    @(link_name = "yaml_emitter_set_output_string")
-    emitter_set_output_string :: proc(emitter_p: ^emitter, output: ^u8, size: u32, size_written: ^u32) ---
-
 }
 
 }

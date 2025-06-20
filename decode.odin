@@ -65,7 +65,7 @@ decode_from_bytes :: proc(
     }
     defer parser_delete(&parser)
 
-    parser_set_input_string(&parser, raw_data(data), u64(len(data)))
+    parser_set_input_string(&parser, raw_data(data), uint(len(data)))
 
     e: event
     aliases: Mapping
