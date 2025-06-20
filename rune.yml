@@ -26,8 +26,6 @@ from:
     - stdinc
   extern:
     - "stdinc/*"
-  disable_stdint_macros: true
-  disable_system_include_gen: true
 to:
   language: odin
   package: yaml
@@ -41,3 +39,4 @@ to:
   extern:
     sources:
       'stdinc/stdio.h': 'core:c/libc'
+  use_when_else: true
