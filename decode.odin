@@ -43,8 +43,8 @@ decode_from_file :: proc(
     v: Value,
     err: Maybe(Error),
 ) {
-    data, ok := os.read_entire_file(file_name)
-    if !ok do return v, Error{type = .IO}
+    data, dataErr := os.read_entire_file(file_name, context.allocator)
+    if dataErr != os.ERROR_NONE do return v, Error{type = .IO}
     defer delete(data)
     return decode_from_bytes(data, allocator)
 }
